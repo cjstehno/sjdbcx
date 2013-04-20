@@ -1,0 +1,16 @@
+
+.classpath
+.project
+.settings
+/*.launch
+/*.tmproj
+/out
+
+.idea/*
+*.iml
+*.iws
+*.ipr
+
+/target
+
+*.war
