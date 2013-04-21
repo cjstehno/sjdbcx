@@ -28,6 +28,9 @@ import org.springframework.util.Assert;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Invocation handler used to "implement" the repository interfaces.
@@ -59,11 +62,39 @@ class RepositoryInvocationHandler implements InvocationHandler {
         final SqlParameterSource parameterSource = parseArguments( method, args );
 
         if( sqlAnno.type() == Sql.Type.UPDATE ){
-            return jdbcTemplate.update( sql, parameterSource );
+            final int result = jdbcTemplate.update( sql, parameterSource );
+
+            // supports (return): int, boolean
+            Object returnValue = null;
+            if( method.getReturnType().equals( boolean.class ) ){
+                returnValue = result > 0;
+            } else if( method.getReturnType().equals( int.class ) ){
+                returnValue = result;
+            }
+
+            return returnValue;
 
         } else {
-            // TODO: may need to differentiate between single results vs collection or array
-            return jdbcTemplate.query( sql, parameterSource, configureRowMapper(method) );
+            final List results = jdbcTemplate.query( sql, parameterSource, configureRowMapper(method) );
+
+            // supports: collection, list, array, single mapped object
+            final Object returnValue;
+            if( List.class.isAssignableFrom( method.getReturnType() ) ){
+                returnValue = results;
+
+            } else if( Collection.class.equals( method.getReturnType() ) ){
+                returnValue = results;
+
+            } else if( method.getReturnType().isArray() ){
+                returnValue = results.toArray();
+
+            } else {
+                // FIXME: would be better to use row mapper type to determine single-mapped object then fail on "else" fall-through
+                // single object
+                return results.get(0);
+            }
+
+            return returnValue;
         }
     }
 
@@ -73,7 +104,18 @@ class RepositoryInvocationHandler implements InvocationHandler {
 
     private RowMapper configureRowMapper( final Method method ) throws IllegalAccessException, InstantiationException {
         final com.stehno.sjdbcx.annotation.RowMapper mapper = AnnotationUtils.getAnnotation( method, com.stehno.sjdbcx.annotation.RowMapper.class );
-        return mapper == null ? new BeanPropertyRowMapper(method.getReturnType()) : rowMapperResolver.resolveRowMapper(mapper.value());
+        if( mapper == null ){
+            Class mappedType = method.getReturnType();
+            if( Collection.class.isAssignableFrom( mappedType ) ){
+                mappedType = (Class)((ParameterizedType)method.getGenericReturnType()).getActualTypeArguments()[0];
+            }
+            // TODO: do for array and map too
+
+            return new BeanPropertyRowMapper(mappedType);
+
+        } else {
+            return rowMapperResolver.resolveRowMapper(mapper.value());
+        }
     }
 
     private SqlParameterSource parseArguments( final Method method, final Object[] args) {
