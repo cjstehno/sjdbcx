@@ -29,7 +29,7 @@ public class BeanNameRowMapperResolver implements RowMapperResolver {
     @Autowired private ApplicationContext applicationContext;
 
     @Override @SuppressWarnings("unchecked")
-    public <T> RowMapper<T> resolveRowMapper( final String name ){
+    public <T> RowMapper<T> resolve( final String name ){
         return applicationContext.getBean( name, RowMapper.class );
     }
 }

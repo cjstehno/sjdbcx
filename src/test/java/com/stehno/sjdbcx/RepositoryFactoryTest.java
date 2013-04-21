@@ -199,7 +199,7 @@ public class RepositoryFactoryTest {
 
     @Test
     public void countPeople(){
-        when( rowMapperResolver.resolveRowMapper("singleColumnRowMapper") ).thenReturn(
+        when( rowMapperResolver.resolve( "singleColumnRowMapper" ) ).thenReturn(
             new SingleColumnRowMapper( Long.class )
         );
 

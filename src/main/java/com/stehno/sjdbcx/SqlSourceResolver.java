@@ -17,9 +17,17 @@
 package com.stehno.sjdbcx;
 
 /**
- * FIXME: document
+ * Allows SQL strings to be generated/resolved separate from the code and annotations themselves.
+ *
+ * @see com.stehno.sjdbcx.annotation.Sql
  */
 public interface SqlSourceResolver {
 
+    /**
+     * Resolves the SQL string for the given key value.
+     *
+     * @param key the key used to find the SQL string
+     * @return the SQL string
+     */
     String resolve( final String key );
 }

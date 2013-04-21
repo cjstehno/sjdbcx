@@ -123,7 +123,7 @@ class RepositoryInvocationHandler implements InvocationHandler {
             return new BeanPropertyRowMapper(mappedType);
 
         } else {
-            return rowMapperResolver.resolveRowMapper(mapper.value());
+            return rowMapperResolver.resolve( mapper.value() );
         }
     }
 

@@ -52,7 +52,7 @@ public class RepositoryFactoryIntegrationTest {
             "select id,first_name,last_name,age from people where first_name=:name"
         );
 
-        when(rowMapperResolver.resolveRowMapper("singleColumnRowMapper")).thenReturn(
+        when(rowMapperResolver.resolve( "singleColumnRowMapper" )).thenReturn(
             new SingleColumnRowMapper( Long.class )
         );
 

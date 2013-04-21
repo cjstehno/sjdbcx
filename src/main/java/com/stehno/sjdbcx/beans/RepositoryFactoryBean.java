@@ -16,24 +16,29 @@
 
 package com.stehno.sjdbcx.beans;
 
+import com.stehno.sjdbcx.RepositoryFactory;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
 /**
- * Created with IntelliJ IDEA.
- * User: cjstehno
- * Date: 4/20/13
- * Time: 5:54 AM
- * To change this template use File | Settings | File Templates.
+ *
  */
-public class RepositoryFactoryBean<T> extends AbstractFactoryBean<T> {
+public class RepositoryFactoryBean extends AbstractFactoryBean {
 
-    @Override
-    public Class<?> getObjectType(){
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    private final Class type;
+    private final RepositoryFactory factory;
+
+    public RepositoryFactoryBean( final RepositoryFactory factory, final Class type ){
+        this.factory = factory;
+        this.type = type;
     }
 
     @Override
-    protected T createInstance() throws Exception{
-        return null;  //To change body of implemented methods use File | Settings | File Templates.
+    public Class<?> getObjectType(){
+        return type;
+    }
+
+    @Override
+    protected Object createInstance() throws Exception {
+        return factory.create( type );
     }
 }
