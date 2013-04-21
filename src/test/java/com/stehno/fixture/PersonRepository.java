@@ -22,9 +22,6 @@ import com.stehno.sjdbcx.annotation.Sql;
 
 import java.util.List;
 
-/*
-
- */
 @SuppressWarnings("ALL")
 public interface PersonRepository {
 
