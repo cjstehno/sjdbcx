@@ -20,7 +20,7 @@ import com.stehno.sjdbcx.RepositoryFactory;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 
 /**
- *
+ *  Spring factory bean used to create configured proxied instances of the configured repository bean.
  */
 public class RepositoryFactoryBean extends AbstractFactoryBean {
 
