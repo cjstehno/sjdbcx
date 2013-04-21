@@ -62,40 +62,49 @@ class RepositoryInvocationHandler implements InvocationHandler {
         final SqlParameterSource parameterSource = parseArguments( method, args );
 
         if( sqlAnno.type() == Sql.Type.UPDATE ){
-            final int result = jdbcTemplate.update( sql, parameterSource );
-
-            // supports (return): int, boolean
-            Object returnValue = null;
-            if( method.getReturnType().equals( boolean.class ) ){
-                returnValue = result > 0;
-            } else if( method.getReturnType().equals( int.class ) ){
-                returnValue = result;
-            }
-
-            return returnValue;
+            return handleUpdate( method, sql, parameterSource );
 
         } else {
-            final List results = jdbcTemplate.query( sql, parameterSource, configureRowMapper(method) );
-
-            // supports: collection, list, array, single mapped object
-            final Object returnValue;
-            if( List.class.isAssignableFrom( method.getReturnType() ) ){
-                returnValue = results;
-
-            } else if( Collection.class.equals( method.getReturnType() ) ){
-                returnValue = results;
-
-            } else if( method.getReturnType().isArray() ){
-                returnValue = results.toArray();
-
-            } else {
-                // FIXME: would be better to use row mapper type to determine single-mapped object then fail on "else" fall-through
-                // single object
-                return results.get(0);
-            }
-
-            return returnValue;
+            return handleQuery( method, sql, parameterSource );
         }
+    }
+
+    private Object handleQuery( final Method method, final String sql, final SqlParameterSource parameterSource ) throws IllegalAccessException, InstantiationException{
+        final List results = jdbcTemplate.query( sql, parameterSource, configureRowMapper( method ) );
+
+        // supports: collection, list, array, single mapped object
+        final Class returnType = method.getReturnType();
+        final Object returnValue;
+        if( List.class.isAssignableFrom( returnType ) ){
+            returnValue = results;
+
+        } else if( Collection.class.equals( returnType ) ){
+            returnValue = results;
+
+        } else if( returnType.isArray() ){
+            returnValue = results.toArray();
+
+        } else {
+            // FIXME: would be better to use row mapper type to determine single-mapped object then fail on "else" fall-through
+            // single object
+            returnValue = results.get(0);
+        }
+
+        return returnValue;
+    }
+
+    private Object handleUpdate( final Method method, final String sql, final SqlParameterSource parameterSource ){
+        final int result = jdbcTemplate.update( sql, parameterSource );
+
+        // supports (return): int, boolean
+        Object returnValue = null;
+        if( method.getReturnType().equals( boolean.class ) ){
+            returnValue = result > 0;
+        } else if( method.getReturnType().equals( int.class ) ){
+            returnValue = result;
+        }
+
+        return returnValue;
     }
 
     private String extractSql( final String value, final boolean lookup ){

@@ -65,4 +65,31 @@ public class Person {
     public void setAge(int age) {
         this.age = age;
     }
+
+    /**
+     * ... does not include ID.
+     * @param o
+     * @return
+     */
+    @Override
+    public boolean equals( final Object o ){
+        if( this == o ) return true;
+        if( o == null || getClass() != o.getClass() ) return false;
+
+        final Person person = (Person)o;
+
+        if( age != person.age ) return false;
+        if( !firstName.equals( person.firstName ) ) return false;
+        if( !lastName.equals( person.lastName ) ) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode(){
+        int result = firstName.hashCode();
+        result = 31 * result + lastName.hashCode();
+        result = 31 * result + age;
+        return result;
+    }
 }

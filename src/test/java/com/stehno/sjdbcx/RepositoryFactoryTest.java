@@ -26,6 +26,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
@@ -183,7 +184,7 @@ public class RepositoryFactoryTest {
     public void findByName(){
         when( sqlSourceResolver.resolve("sql.findByName") ).thenReturn( "some sql" );
 
-        when(jdbcTemplate.query( eq("some sql"), paramCaptor.capture(), any(BeanPropertyRowMapper.class))).thenReturn(
+        when( jdbcTemplate.query( eq( "some sql" ), paramCaptor.capture(), any( BeanPropertyRowMapper.class ) ) ).thenReturn(
             Arrays.asList( person )
         );
 
@@ -194,5 +195,26 @@ public class RepositoryFactoryTest {
 
         assertEquals( 1, paramSource.getValues().size() );
         assertEquals( "Bob", paramSource.getValue( "name" ) );
+    }
+
+    @Test
+    public void countPeople(){
+        when( rowMapperResolver.resolveRowMapper("singleColumnRowMapper") ).thenReturn(
+            new SingleColumnRowMapper( Long.class )
+        );
+
+        when( jdbcTemplate.query(
+            eq( "select count(*) from people" ),
+            paramCaptor.capture(),
+            any( SingleColumnRowMapper.class )
+        ) ).thenReturn(
+            Arrays.asList( 1L )
+        );
+
+        final long count = repository.countPeople();
+        assertEquals( 1L, count );
+
+        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
+        assertEquals( 0, paramSource.getValues().size() );
     }
 }

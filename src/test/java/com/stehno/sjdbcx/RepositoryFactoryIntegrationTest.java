@@ -25,12 +25,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.test.jdbc.JdbcTestUtils;
 
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RepositoryFactoryIntegrationTest {
@@ -46,6 +48,14 @@ public class RepositoryFactoryIntegrationTest {
 
     @Before
     public void before(){
+        when(sqlSourceResolver.resolve("sql.findByName")).thenReturn(
+            "select id,first_name,last_name,age from people where first_name=:name"
+        );
+
+        when(rowMapperResolver.resolveRowMapper("singleColumnRowMapper")).thenReturn(
+            new SingleColumnRowMapper( Long.class )
+        );
+
         factory = new RepositoryFactory();
         factory.setNamedParameterJdbcTemplate( database.getNamedJdbcTemplate() );
         factory.setSqlSourceResolver( sqlSourceResolver );
@@ -58,12 +68,33 @@ public class RepositoryFactoryIntegrationTest {
     }
 
     @Test
-    public void create(){
+    public void exercise(){
         repository.create( person );
 
         assertEquals( 1, JdbcTestUtils.countRowsInTable( database.getJdbcTemplate(), TABLE_NAME ) );
 
         final List<Person> people = repository.list();
         assertEquals( 1, people.size() );
+        assertEquals( person, people.get( 0 ) );
+
+        assertEquals( person, repository.fetch( 1 ) );
+
+        assertEquals( 0, repository.findByAgeRange( 18, 20 ).size() );
+        assertEquals( person, repository.findByAgeRange( 40, 50 ).get( 0 ) );
+
+        assertEquals( 1L, repository.countPeople() );
+
+        assertEquals( person, repository.findByName( "John" ).get( 0 ) );
+
+        final Person toUpdate = people.get(0);
+        toUpdate.setFirstName( "Jane" );
+
+        repository.update( toUpdate );
+
+        assertEquals( toUpdate, repository.fetch( 1 ) );
+
+        repository.delete( 1L );
+
+        assertEquals( 0, JdbcTestUtils.countRowsInTable( database.getJdbcTemplate(), TABLE_NAME ) );
     }
 }

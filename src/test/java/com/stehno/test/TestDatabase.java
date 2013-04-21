@@ -45,7 +45,7 @@ public class TestDatabase extends ExternalResource {
         namedJdbcTemplate = new NamedParameterJdbcTemplate( jdbcTemplate );
 
         jdbcTemplate.execute(
-            "create table people (id int, first_name varchar(40), last_name varchar(40), age int)"
+            "create table people (id int AUTO_INCREMENT primary key, first_name varchar(40), last_name varchar(40), age int)"
         );
     }
 
