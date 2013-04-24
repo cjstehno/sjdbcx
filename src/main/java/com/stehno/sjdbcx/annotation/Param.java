@@ -23,6 +23,8 @@ import java.lang.annotation.Target;
 
 /**
  * Used to annotate non-bean method parameters in order to bind them to the SQL statement.
+ * The name specified as the "value" will be used to map the parameter value to that SQL replacement variable
+ * of the name name.
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)

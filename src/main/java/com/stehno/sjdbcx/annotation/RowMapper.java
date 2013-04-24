@@ -23,6 +23,8 @@ import java.lang.annotation.Target;
 
 /**
  *  Used to provide a row mapper to be used by a QUERY type SQL statement.
+ *
+ *  The bean provided by this reference should implement the Spring RowMapper interface.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)

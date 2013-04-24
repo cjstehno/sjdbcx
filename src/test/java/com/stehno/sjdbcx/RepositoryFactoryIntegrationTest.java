@@ -45,6 +45,7 @@ public class RepositoryFactoryIntegrationTest {
     @Rule public TestDatabase database = new TestDatabase();
     @Mock private SqlSourceResolver sqlSourceResolver;
     @Mock private RowMapperResolver rowMapperResolver;
+    @Mock private ParamMapperResolver paramMapperResolver;
 
     @Before
     public void before(){
@@ -60,6 +61,7 @@ public class RepositoryFactoryIntegrationTest {
         factory.setNamedParameterJdbcTemplate( database.getNamedJdbcTemplate() );
         factory.setSqlSourceResolver( sqlSourceResolver );
         factory.setRowMapperResolver( rowMapperResolver );
+        factory.setParamMapperResolver( paramMapperResolver );
 
         repository = factory.create( PersonRepository.class );
         assertNotNull( repository );

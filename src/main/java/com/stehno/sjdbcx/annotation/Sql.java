@@ -29,7 +29,14 @@ import java.lang.annotation.Target;
 public @interface Sql {
 
     enum Type {
+        /**
+         * Produces an update call.
+         */
         UPDATE,
+
+        /**
+         * Produces a query call.
+         */
         QUERY
     }
 

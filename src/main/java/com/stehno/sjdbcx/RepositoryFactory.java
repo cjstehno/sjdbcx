@@ -29,6 +29,11 @@ public class RepositoryFactory {
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private SqlSourceResolver sqlSourceResolver;
     private RowMapperResolver rowMapperResolver;
+    private ParamMapperResolver paramMapperResolver;
+
+    public void setParamMapperResolver( final ParamMapperResolver paramMapperResolver ){
+        this.paramMapperResolver = paramMapperResolver;
+    }
 
     public void setRowMapperResolver( final RowMapperResolver rowMapperResolver ){
         this.rowMapperResolver = rowMapperResolver;
@@ -49,6 +54,7 @@ public class RepositoryFactory {
         handler.setSqlSourceResolver( sqlSourceResolver );
         handler.setJdbcTemplate( namedParameterJdbcTemplate );
         handler.setRowMapperResolver( rowMapperResolver );
+        handler.setParamMapperResolver( paramMapperResolver );
 
         return (T)Proxy.newProxyInstance( repoIface.getClassLoader(), new Class[]{ repoIface }, handler );
     }

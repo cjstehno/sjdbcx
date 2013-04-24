@@ -27,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
@@ -34,6 +35,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -51,6 +53,7 @@ public class RepositoryFactoryTest {
     @Mock private NamedParameterJdbcTemplate jdbcTemplate;
     @Mock private SqlSourceResolver sqlSourceResolver;
     @Mock private RowMapperResolver rowMapperResolver;
+    @Mock private ParamMapperResolver paramMapperResolver;
     @Captor private ArgumentCaptor<SqlParameterSource> paramCaptor;
 
     @Before
@@ -59,6 +62,7 @@ public class RepositoryFactoryTest {
         factory.setNamedParameterJdbcTemplate( jdbcTemplate );
         factory.setSqlSourceResolver( sqlSourceResolver );
         factory.setRowMapperResolver( rowMapperResolver );
+        factory.setParamMapperResolver( paramMapperResolver );
 
         repository = factory.create( PersonRepository.class );
         assertNotNull( repository );
@@ -75,7 +79,7 @@ public class RepositoryFactoryTest {
             paramCaptor.capture()
         );
 
-        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
+        final MapSqlParameterSource paramSource = (MapSqlParameterSource)paramCaptor.getValue();
 
         assertEquals( 5, paramSource.getValues().size() );
         assertEquals( "John", paramSource.getValue( "firstName" ) );
@@ -99,8 +103,7 @@ public class RepositoryFactoryTest {
         assertNotNull( people );
         assertEquals( 1, people.size() );
 
-        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
-        assertEquals( 0, paramSource.getValues().size() );
+        assertNull( paramCaptor.getValue() );
     }
 
     @Test
@@ -116,7 +119,7 @@ public class RepositoryFactoryTest {
         final Person pers = repository.fetch( 100 );
         assertNotNull( pers );
 
-        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
+        final MapSqlParameterSource paramSource = (MapSqlParameterSource)paramCaptor.getValue();
 
         assertEquals( 1, paramSource.getValues().size() );
         assertEquals( 100L, paramSource.getValue( "id" ) );
@@ -137,7 +140,7 @@ public class RepositoryFactoryTest {
         assertEquals( 1, results.size() );
         assertEquals( person, results.get(0) );
 
-        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
+        final MapSqlParameterSource paramSource = (MapSqlParameterSource)paramCaptor.getValue();
 
         assertEquals( 2, paramSource.getValues().size() );
         assertEquals( 18, paramSource.getValue( "min" ) );
@@ -155,7 +158,7 @@ public class RepositoryFactoryTest {
             paramCaptor.capture()
         );
 
-        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
+        final MapSqlParameterSource paramSource = (MapSqlParameterSource)paramCaptor.getValue();
 
         assertEquals( 5, paramSource.getValues().size() );
         assertEquals( "John", paramSource.getValue( "firstName" ) );
@@ -174,7 +177,7 @@ public class RepositoryFactoryTest {
         final boolean deleted = repository.delete( 246L );
         assertTrue( deleted );
 
-        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
+        final MapSqlParameterSource paramSource = (MapSqlParameterSource)paramCaptor.getValue();
 
         assertEquals( 1, paramSource.getValues().size() );
         assertEquals( 246L, paramSource.getValue( "id" ) );
@@ -191,7 +194,7 @@ public class RepositoryFactoryTest {
         final List<Person> people = repository.findByName("Bob");
         assertEquals( 1, people.size() );
 
-        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
+        final MapSqlParameterSource paramSource = (MapSqlParameterSource)paramCaptor.getValue();
 
         assertEquals( 1, paramSource.getValues().size() );
         assertEquals( "Bob", paramSource.getValue( "name" ) );
@@ -214,7 +217,6 @@ public class RepositoryFactoryTest {
         final long count = repository.countPeople();
         assertEquals( 1L, count );
 
-        final CompositeSqlParameterSource paramSource = (CompositeSqlParameterSource)paramCaptor.getValue();
-        assertEquals( 0, paramSource.getValues().size() );
+        assertNull( paramCaptor.getValue() );
     }
 }

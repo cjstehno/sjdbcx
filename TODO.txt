@@ -1,0 +1,18 @@
+
+Allow annotate interface with @SJDBCX to automatically configure proxying
+-   use bean post processing
+
+Allow annotate config with @EnableSJDBCX
+-   to add default beans and configs
+-   should allow to specify alternate bean names
+
+
+
+-	if single return, may want to use template method for single value?
+-	spring expressions in SQL?
+	-	or, how to get nested properties from domain objects (e.g. location.latitude)
+	-	in mappers too
+
+ResultSetExtractor
+RowCallbackHandler
+(batch operations)
