@@ -27,6 +27,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.util.Assert;
@@ -189,6 +190,11 @@ class RepositoryInvocationHandler implements InvocationHandler {
 
             } else if( mappedType.isArray() ){
                 throw new UnsupportedOperationException( "Auto-mapping for array return types is not yet supported" );
+
+            } else if( mappedType.isPrimitive() ){
+                if( mappedType == int.class || mappedType == long.class ){
+                    return new SingleColumnRowMapper();
+                }
             }
 
             return new BeanPropertyRowMapper(mappedType);

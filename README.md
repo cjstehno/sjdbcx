@@ -45,4 +45,6 @@ provide a more lightweight spring-centric approach.
 
 This library should be viewed as an extension to Spring (unofficial), not a stand-alone mapping utility.
 
+See the [wiki](https://github.com/cjstehno/sjdbcx/wiki) for more information...
+
 [![Build Status](https://drone.io/github.com/cjstehno/sjdbcx/status.png)](https://drone.io/github.com/cjstehno/sjdbcx/latest)

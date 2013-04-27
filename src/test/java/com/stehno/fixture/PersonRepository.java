@@ -47,6 +47,6 @@ public interface PersonRepository {
     @Sql(value="sql.findByName", resolve = ResolveMethod.LOOKUP)
     List<Person> findByName( @Param("name") final String name );
 
-    @Sql("select count(*) from people") @RowMapper("singleColumnRowMapper")
+    @Sql("select count(*) from people")
     long countPeople();
 }
