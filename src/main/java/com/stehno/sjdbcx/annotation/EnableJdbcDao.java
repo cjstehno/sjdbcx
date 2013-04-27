@@ -14,16 +14,20 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx;
+package com.stehno.sjdbcx.annotation;
 
-import org.springframework.core.io.Resource;
+import com.stehno.sjdbcx.config.SjdbcxConfiguration;
+import org.springframework.context.annotation.Import;
+
+import java.lang.annotation.*;
 
 /**
- *
+ * Used to simplify the configuration. When this annotation is added to a configuration class, it will load the
+ * default spring configuration beans for SJDBCX.
  */
-public interface SqlSourceResolver {
-
-    /**
-     */
-    SqlSource resolve( final Resource resource );
+@Target(ElementType.TYPE)
+@Retention(RetentionPolicy.RUNTIME)
+@Import(SjdbcxConfiguration.class)
+public @interface EnableJdbcDao {
+    // nothing special yet
 }

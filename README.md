@@ -44,3 +44,5 @@ I realize there are other JDBC mappers available; however, while Sjdbcx draws in
 provide a more lightweight spring-centric approach.
 
 This library should be viewed as an extension to Spring (unofficial), not a stand-alone mapping utility.
+
+[![Build Status](https://drone.io/github.com/cjstehno/sjdbcx/status.png)](https://drone.io/github.com/cjstehno/sjdbcx/latest)

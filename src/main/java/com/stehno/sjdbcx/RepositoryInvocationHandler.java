@@ -16,15 +16,21 @@
 
 package com.stehno.sjdbcx;
 
+import com.stehno.sjdbcx.annotation.JdbcDao;
+import com.stehno.sjdbcx.annotation.ResolveMethod;
 import com.stehno.sjdbcx.annotation.Sql;
+import com.stehno.sjdbcx.annotation.SqlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.util.Assert;
+import org.springframework.util.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
@@ -38,6 +44,7 @@ import java.util.List;
  * Invocation handler used to "implement" the repository interfaces.
  */
 class RepositoryInvocationHandler implements InvocationHandler {
+    // FIXME: this class needs some refactoring love
 
     private static final Logger log = LoggerFactory.getLogger(RepositoryInvocationHandler.class);
     private NamedParameterJdbcTemplate jdbcTemplate;
@@ -70,7 +77,11 @@ class RepositoryInvocationHandler implements InvocationHandler {
         final Sql sqlAnno = AnnotationUtils.getAnnotation( method, Sql.class );
         Assert.notNull( sqlAnno, "No SQL annotation specified." );
 
-        final String sql = extractSql( sqlAnno.value(), sqlAnno.lookup() );
+        final JdbcDao jdbcDaoAnno = AnnotationUtils.findAnnotation( proxy.getClass(), JdbcDao.class );
+        final Resource sqlResource = sqlResource( proxy.getClass(), jdbcDaoAnno );
+        final ResolveMethod resolveMethod = determineResolve( jdbcDaoAnno, sqlAnno.resolve() );
+
+        final String sql = extractSql( sqlResource, sqlAnno.value(), resolveMethod == ResolveMethod.LOOKUP );
         final SqlParameterSource parameterSource = mapArguments( method, parseArguments( method, args ) );
 
         if(log.isTraceEnabled()){
@@ -79,12 +90,43 @@ class RepositoryInvocationHandler implements InvocationHandler {
             log.trace(" - Params: {}", parameterSource);
         }
 
-        if( sqlAnno.type() == Sql.Type.UPDATE ){
+        if( sqlAnno.type() == SqlType.UPDATE ){
             return handleUpdate( method, sql, parameterSource );
 
         } else {
             return handleQuery( method, sql, parameterSource );
         }
+    }
+
+    private ResolveMethod determineResolve( final JdbcDao jdbcAnno, final ResolveMethod sqlResolve ){
+        if( sqlResolve == ResolveMethod.DEFAULT ){
+            if( jdbcAnno != null ){
+                if( jdbcAnno.defaultResolve() == ResolveMethod.DEFAULT ){
+                    return ResolveMethod.LOOKUP;
+                } else {
+                    return jdbcAnno.defaultResolve();
+                }
+            } else {
+                return ResolveMethod.LOOKUP;
+            }
+        } else {
+            return sqlResolve;
+        }
+    }
+
+    private Resource sqlResource( final Class clazz, final JdbcDao anno ){
+        final String resource = anno != null ? anno.value() : null;
+
+        final String cpString;
+        if( StringUtils.hasLength(resource) ){
+            // user defined
+            cpString = resource;
+        } else {
+            // use class
+            cpString = clazz.getInterfaces()[0].getSimpleName().toLowerCase() + ".sql.properties";
+        }
+
+        return new ClassPathResource("/" + cpString);
     }
 
     private Object handleQuery( final Method method, final String sql, final SqlParameterSource parameterSource ) throws IllegalAccessException, InstantiationException{
@@ -133,8 +175,8 @@ class RepositoryInvocationHandler implements InvocationHandler {
         return returnValue;
     }
 
-    private String extractSql( final String value, final boolean lookup ){
-        return lookup ? sqlSourceResolver.resolve(value) : value;
+    private String extractSql( final Resource resource, final String value, final boolean lookup ){
+        return lookup ? sqlSourceResolver.resolve(resource).getSql(value) : value;
     }
 
     private RowMapper configureRowMapper( final Method method ) throws IllegalAccessException, InstantiationException {

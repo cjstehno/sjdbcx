@@ -25,6 +25,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.test.jdbc.JdbcTestUtils;
 
@@ -32,6 +33,7 @@ import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.TestCase.assertNotNull;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -49,9 +51,10 @@ public class RepositoryFactoryIntegrationTest {
 
     @Before
     public void before(){
-        when(sqlSourceResolver.resolve("sql.findByName")).thenReturn(
-            "select id,first_name,last_name,age from people where first_name=:name"
-        );
+        final SqlSource sqlSource = mock(SqlSource.class);
+        when(sqlSource.getSql("sql.findByName")).thenReturn("select id,first_name,last_name,age from people where first_name=:name");
+
+        when( sqlSourceResolver.resolve( new ClassPathResource( "/personrepository.sql.properties" ) ) ).thenReturn(sqlSource);
 
         when(rowMapperResolver.resolve( "singleColumnRowMapper" )).thenReturn(
             new SingleColumnRowMapper( Long.class )

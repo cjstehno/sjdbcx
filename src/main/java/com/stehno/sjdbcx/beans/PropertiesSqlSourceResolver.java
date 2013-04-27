@@ -16,9 +16,14 @@
 
 package com.stehno.sjdbcx.beans;
 
+import com.stehno.sjdbcx.SqlSource;
 import com.stehno.sjdbcx.SqlSourceResolver;
-import org.springframework.util.Assert;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.core.io.Resource;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -28,27 +33,25 @@ import java.util.Properties;
  */
 public class PropertiesSqlSourceResolver implements SqlSourceResolver {
 
-    private Properties properties;
-
-    public void setProperties( final Properties properties ){
-        this.properties = properties;
-    }
+    private static final Logger log = LoggerFactory.getLogger(PropertiesSqlSourceResolver.class);
 
     /**
-     * Resolves SQL strings from the configured Properties instance. The keys will be mapped directly to property keys.
-     *
-     * If no value is found for the key, an exception will be thrown.
-     *
-     * @param key the property key for the SQL string
-     * @return the SQL string
-     * @throws IllegalArgumentException if there is no mapping for the specified key
      */
     @Override
-    public String resolve( final String key ){
-        final String sql = properties.getProperty(key);
+    public SqlSource resolve( final Resource resource ){
+        final Properties properties = new Properties();
 
-        Assert.notNull( sql, String.format( "No SQL specified for mapping (%s).", key ) );
+        try (final InputStream input = resource.getInputStream() ){
+            properties.load( input );
+        } catch( IOException e ){
+            log.error("Unable to load property resource ({}): {}", resource, e.getMessage(), e);
+        }
 
-        return sql;
+        return new SqlSource() {
+            @Override
+            public String getSql( final String key ){
+                return properties.getProperty( key );
+            }
+        };
     }
 }

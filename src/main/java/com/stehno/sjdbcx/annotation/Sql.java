@@ -28,18 +28,6 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Sql {
 
-    enum Type {
-        /**
-         * Produces an update call.
-         */
-        UPDATE,
-
-        /**
-         * Produces a query call.
-         */
-        QUERY
-    }
-
     /**
      * The string of SQL with replacement parameters (named, not indexed).
      * @return
@@ -48,16 +36,15 @@ public @interface Sql {
 
     /**
      * Value used to retrieve the actual SQL string from a configured SqlSourceResolver.
-     * The default is false.
      *
      * @return
      */
-    boolean lookup() default false;
+    ResolveMethod resolve() default ResolveMethod.DEFAULT;
 
     /**
      * The type of SQL operation, defaults to QUERY.
      *
      * @return
      */
-    Type type() default Type.QUERY;
+    SqlType type() default SqlType.QUERY;
 }

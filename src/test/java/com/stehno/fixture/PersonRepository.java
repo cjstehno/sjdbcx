@@ -16,18 +16,17 @@
 
 package com.stehno.fixture;
 
-import com.stehno.sjdbcx.annotation.Param;
-import com.stehno.sjdbcx.annotation.RowMapper;
-import com.stehno.sjdbcx.annotation.Sql;
+import com.stehno.sjdbcx.annotation.*;
 
 import java.util.List;
 
+@JdbcDao(defaultResolve=ResolveMethod.SQL)
 @SuppressWarnings("ALL")
 public interface PersonRepository {
 
     static final String SQL = "insert into people (first_name,last_name,age) values (:firstName,:lastName,:age)";
 
-    @Sql(value=SQL, type=Sql.Type.UPDATE)
+    @Sql(value=SQL, type= SqlType.UPDATE)
     void create( Person person );
 
     @Sql("select id,first_name,last_name,age from people order by last_name,first_name,age")
@@ -39,13 +38,13 @@ public interface PersonRepository {
     @Sql("select id,first_name,last_name,age from people where age >= :min and age <= :max order by last_name,first_name,age")
     List<Person> findByAgeRange( @Param("min") int ageMin, @Param("max") int ageMax );
 
-    @Sql(value="update people set first_name=:firstName,last_name=:lastName,age=:age where id=:id", type=Sql.Type.UPDATE)
+    @Sql(value="update people set first_name=:firstName,last_name=:lastName,age=:age where id=:id", type=SqlType.UPDATE)
     void update( Person person );
 
-    @Sql(value="delete from people where id=:id", type=Sql.Type.UPDATE)
+    @Sql(value="delete from people where id=:id", type=SqlType.UPDATE)
     boolean delete( @Param("id") long personId );
 
-    @Sql(value="sql.findByName", lookup=true)
+    @Sql(value="sql.findByName", resolve = ResolveMethod.LOOKUP)
     List<Person> findByName( @Param("name") final String name );
 
     @Sql("select count(*) from people") @RowMapper("singleColumnRowMapper")
