@@ -25,6 +25,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
+import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
@@ -152,7 +153,8 @@ class RepositoryInvocationHandler implements InvocationHandler {
         } else {
             // FIXME: would be better to use row mapper type to determine single-mapped object then fail on "else" fall-through
             // single object
-            returnValue = results.get(0);
+
+            returnValue = DataAccessUtils.requiredSingleResult( results );
         }
 
         return returnValue;
