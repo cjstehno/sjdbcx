@@ -16,23 +16,22 @@
 
 package com.stehno.sjdbcx.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  *  Used to annotate a method with a SQL statement.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface Sql {
 
     /**
-     * The string of SQL with replacement parameters (named, not indexed).
+     * The string of SQL with replacement parameters (named, not indexed). If not specified the method name will be used
+     * in the resolver. If the resolve method it ResolveMethod.SQL this is not a valid combination.
      * @return
      */
-    String value();
+    String value() default "";
 
     /**
      * Value used to retrieve the actual SQL string from a configured SqlSourceResolver.

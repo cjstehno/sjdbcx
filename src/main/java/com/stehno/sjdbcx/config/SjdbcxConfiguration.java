@@ -16,21 +16,15 @@
 
 package com.stehno.sjdbcx.config;
 
-import com.stehno.sjdbcx.ParamMapperResolver;
 import com.stehno.sjdbcx.RepositoryFactory;
-import com.stehno.sjdbcx.RowMapperResolver;
-import com.stehno.sjdbcx.beans.BeanNameParamMapperResolver;
-import com.stehno.sjdbcx.beans.BeanNameRowMapperResolver;
+import com.stehno.sjdbcx.beans.ApplicationContextComponentResolver;
 import com.stehno.sjdbcx.beans.PropertiesSqlSourceResolver;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.config.PropertiesFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.io.ClassPathResource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
-import java.util.Properties;
 
 /**
  * This configuration bean provides the default beans for the SJDBCX beans and resolvers.
@@ -50,18 +44,12 @@ public class SjdbcxConfiguration {
         final RepositoryFactory factory = new RepositoryFactory();
         factory.setNamedParameterJdbcTemplate( new NamedParameterJdbcTemplate( dataSource ));
         factory.setSqlSourceResolver( sqlSourceResolver() );
-        factory.setRowMapperResolver( rowMapperResolver() );
-        factory.setParamMapperResolver( paramMapperResolver() );
+        factory.setComponentResolver( componentResolver() );
         return factory;
     }
 
     @Bean
-    public RowMapperResolver rowMapperResolver(){
-        return new BeanNameRowMapperResolver();
-    }
-
-    @Bean
-    public ParamMapperResolver paramMapperResolver(){
-        return new BeanNameParamMapperResolver();
+    public ApplicationContextComponentResolver componentResolver(){
+        return new ApplicationContextComponentResolver();
     }
 }

@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx;
+package com.stehno.sjdbcx.support;
 
+import com.stehno.sjdbcx.ComponentResolver;
+import com.stehno.sjdbcx.ParamArg;
+import com.stehno.sjdbcx.ParamMapper;
+import com.stehno.sjdbcx.SqlSourceResolver;
 import com.stehno.sjdbcx.annotation.JdbcDao;
 import com.stehno.sjdbcx.annotation.ResolveMethod;
 import com.stehno.sjdbcx.annotation.Sql;
@@ -45,29 +49,24 @@ import java.util.List;
 /**
  * Invocation handler used to "implement" the repository interfaces.
  */
-class RepositoryInvocationHandler implements InvocationHandler {
+public class RepositoryInvocationHandler implements InvocationHandler {
     // FIXME: this class needs some refactoring love
 
     private static final Logger log = LoggerFactory.getLogger(RepositoryInvocationHandler.class);
     private NamedParameterJdbcTemplate jdbcTemplate;
     private SqlSourceResolver sqlSourceResolver;
-    private RowMapperResolver rowMapperResolver;
-    private ParamMapperResolver paramMapperResolver;
+    private ComponentResolver componentResolver;
 
-    void setParamMapperResolver( final ParamMapperResolver paramMapperResolver ){
-        this.paramMapperResolver = paramMapperResolver;
-    }
-
-    void setJdbcTemplate( final NamedParameterJdbcTemplate jdbcTemplate ){
+    public void setJdbcTemplate( final NamedParameterJdbcTemplate jdbcTemplate ){
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    void setSqlSourceResolver( final SqlSourceResolver sqlSourceResolver ){
+    public void setSqlSourceResolver( final SqlSourceResolver sqlSourceResolver ){
         this.sqlSourceResolver = sqlSourceResolver;
     }
 
-    void setRowMapperResolver( final RowMapperResolver rowMapperResolver ){
-        this.rowMapperResolver = rowMapperResolver;
+    public void setComponentResolver( final ComponentResolver componentResolver ){
+        this.componentResolver = componentResolver;
     }
 
     @Override
@@ -83,7 +82,8 @@ class RepositoryInvocationHandler implements InvocationHandler {
         final Resource sqlResource = sqlResource( proxy.getClass(), jdbcDaoAnno );
         final ResolveMethod resolveMethod = determineResolve( jdbcDaoAnno, sqlAnno.resolve() );
 
-        final String sql = extractSql( sqlResource, sqlAnno.value(), resolveMethod == ResolveMethod.LOOKUP );
+        final String annoSql = StringUtils.hasLength( sqlAnno.value() ) ? sqlAnno.value() : method.getName().toLowerCase();
+        final String sql = extractSql( sqlResource, annoSql, resolveMethod == ResolveMethod.LOOKUP );
         final SqlParameterSource parameterSource = mapArguments( method, parseArguments( method, args ) );
 
         if(log.isTraceEnabled()){
@@ -202,7 +202,7 @@ class RepositoryInvocationHandler implements InvocationHandler {
             return new BeanPropertyRowMapper(mappedType);
 
         } else {
-            return rowMapperResolver.resolve( mapper.value() );
+            return componentResolver.resolve( mapper.value(), RowMapper.class );
         }
     }
 
@@ -232,7 +232,7 @@ class RepositoryInvocationHandler implements InvocationHandler {
                 return defaultParamMapper.map( paramArgs );
             } else {
                 // FIXME: error handling
-                return paramMapperResolver.resolve( mapper.value() ).map( paramArgs );
+                return componentResolver.resolve( mapper.value(), ParamMapper.class ).map( paramArgs );
             }
         } else {
             return null;

@@ -16,6 +16,7 @@
 
 package com.stehno.sjdbcx;
 
+import com.stehno.sjdbcx.support.RepositoryInvocationHandler;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.lang.reflect.Proxy;
@@ -28,15 +29,10 @@ public class RepositoryFactory {
 
     private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     private SqlSourceResolver sqlSourceResolver;
-    private RowMapperResolver rowMapperResolver;
-    private ParamMapperResolver paramMapperResolver;
+    private ComponentResolver componentResolver;
 
-    public void setParamMapperResolver( final ParamMapperResolver paramMapperResolver ){
-        this.paramMapperResolver = paramMapperResolver;
-    }
-
-    public void setRowMapperResolver( final RowMapperResolver rowMapperResolver ){
-        this.rowMapperResolver = rowMapperResolver;
+    public void setComponentResolver( final ComponentResolver componentResolver ){
+        this.componentResolver = componentResolver;
     }
 
     public void setSqlSourceResolver( final SqlSourceResolver sqlSourceResolver ){
@@ -49,12 +45,10 @@ public class RepositoryFactory {
 
     @SuppressWarnings("unchecked")
     public <T> T create( Class<T> repoIface ){
-        // TODO: this could probably be shared
         final RepositoryInvocationHandler handler = new RepositoryInvocationHandler();
         handler.setSqlSourceResolver( sqlSourceResolver );
         handler.setJdbcTemplate( namedParameterJdbcTemplate );
-        handler.setRowMapperResolver( rowMapperResolver );
-        handler.setParamMapperResolver( paramMapperResolver );
+        handler.setComponentResolver( componentResolver );
 
         return (T)Proxy.newProxyInstance( repoIface.getClassLoader(), new Class[]{ repoIface }, handler );
     }

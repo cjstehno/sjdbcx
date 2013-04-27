@@ -17,8 +17,8 @@
 package com.stehno.sjdbcx.beans;
 
 import com.stehno.fixture.PersonRepository;
+import com.stehno.sjdbcx.ComponentResolver;
 import com.stehno.sjdbcx.RepositoryFactory;
-import com.stehno.sjdbcx.RowMapperResolver;
 import com.stehno.sjdbcx.SqlSourceResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -37,13 +37,13 @@ public class RepositoryFactoryBeanTest {
     private RepositoryFactory repositoryFactory;
 
     @Mock private SqlSourceResolver sqlSourceResolver;
-    @Mock private RowMapperResolver rowMapperResolver;
+    @Mock private ComponentResolver componentResolver;
     @Mock private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Before
     public void before() throws Exception {
         repositoryFactory = new RepositoryFactory();
-        repositoryFactory.setRowMapperResolver( rowMapperResolver );
+        repositoryFactory.setComponentResolver( componentResolver );
         repositoryFactory.setSqlSourceResolver( sqlSourceResolver );
         repositoryFactory.setNamedParameterJdbcTemplate( jdbcTemplate );
 

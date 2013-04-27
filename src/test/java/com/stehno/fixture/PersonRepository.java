@@ -44,7 +44,7 @@ public interface PersonRepository {
     @Sql(value="delete from people where id=:id", type=SqlType.UPDATE)
     boolean delete( @Param("id") long personId );
 
-    @Sql(value="sql.findByName", resolve = ResolveMethod.LOOKUP)
+    @Sql(resolve=ResolveMethod.LOOKUP)
     List<Person> findByName( @Param("name") final String name );
 
     @Sql("select count(*) from people")

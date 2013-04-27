@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx;
+package com.stehno.sjdbcx.support;
 
+import com.stehno.sjdbcx.ParamArg;
+import com.stehno.sjdbcx.ParamMapper;
 import com.stehno.sjdbcx.annotation.Param;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;

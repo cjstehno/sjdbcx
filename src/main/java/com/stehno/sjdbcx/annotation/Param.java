@@ -16,10 +16,7 @@
 
 package com.stehno.sjdbcx.annotation;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Used to annotate non-bean method parameters in order to bind them to the SQL statement.
@@ -28,6 +25,7 @@ import java.lang.annotation.Target;
  */
 @Target(ElementType.PARAMETER)
 @Retention(RetentionPolicy.RUNTIME)
+@Documented
 public @interface Param {
 
     /**

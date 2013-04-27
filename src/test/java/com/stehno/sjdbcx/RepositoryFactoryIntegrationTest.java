@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.test.jdbc.JdbcTestUtils;
 
@@ -46,25 +47,23 @@ public class RepositoryFactoryIntegrationTest {
 
     @Rule public TestDatabase database = new TestDatabase();
     @Mock private SqlSourceResolver sqlSourceResolver;
-    @Mock private RowMapperResolver rowMapperResolver;
-    @Mock private ParamMapperResolver paramMapperResolver;
+    @Mock private ComponentResolver componentResolver;
 
     @Before
     public void before(){
         final SqlSource sqlSource = mock(SqlSource.class);
-        when(sqlSource.getSql("sql.findByName")).thenReturn("select id,first_name,last_name,age from people where first_name=:name");
+        when(sqlSource.getSql("findbyname")).thenReturn("select id,first_name,last_name,age from people where first_name=:name");
 
         when( sqlSourceResolver.resolve( new ClassPathResource( "/personrepository.sql.properties" ) ) ).thenReturn(sqlSource);
 
-        when(rowMapperResolver.resolve( "singleColumnRowMapper" )).thenReturn(
+        when(componentResolver.resolve( "singleColumnRowMapper", RowMapper.class )).thenReturn(
             new SingleColumnRowMapper( Long.class )
         );
 
         factory = new RepositoryFactory();
         factory.setNamedParameterJdbcTemplate( database.getNamedJdbcTemplate() );
         factory.setSqlSourceResolver( sqlSourceResolver );
-        factory.setRowMapperResolver( rowMapperResolver );
-        factory.setParamMapperResolver( paramMapperResolver );
+        factory.setComponentResolver( componentResolver );
 
         repository = factory.create( PersonRepository.class );
         assertNotNull( repository );
