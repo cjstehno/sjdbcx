@@ -16,6 +16,7 @@
 
 package com.stehno.sjdbcx;
 
+import com.stehno.sjdbcx.support.ParamArg;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 /**

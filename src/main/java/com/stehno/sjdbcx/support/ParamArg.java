@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx;
+package com.stehno.sjdbcx.support;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;

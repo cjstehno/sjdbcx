@@ -19,9 +19,11 @@ package com.stehno.sjdbcx.config;
 import com.stehno.sjdbcx.RepositoryFactory;
 import com.stehno.sjdbcx.beans.ApplicationContextComponentResolver;
 import com.stehno.sjdbcx.beans.PropertiesSqlSourceResolver;
+import com.stehno.sjdbcx.support.RepositoryInvocationHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
@@ -35,17 +37,23 @@ public class SjdbcxConfiguration {
     @Autowired private DataSource dataSource;
 
     @Bean
+    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(){
+        return new NamedParameterJdbcTemplate( dataSource );
+    }
+
+    @Bean
     public PropertiesSqlSourceResolver sqlSourceResolver(){
         return new PropertiesSqlSourceResolver();
     }
 
+    @Bean @Scope("prototype")
+    public RepositoryInvocationHandler repositoryInvocationHandler(){
+        return new RepositoryInvocationHandler();
+    }
+
     @Bean
     public RepositoryFactory repositoryFactory(){
-        final RepositoryFactory factory = new RepositoryFactory();
-        factory.setNamedParameterJdbcTemplate( new NamedParameterJdbcTemplate( dataSource ));
-        factory.setSqlSourceResolver( sqlSourceResolver() );
-        factory.setComponentResolver( componentResolver() );
-        return factory;
+        return new RepositoryFactory();
     }
 
     @Bean

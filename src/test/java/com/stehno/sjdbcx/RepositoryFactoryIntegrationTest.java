@@ -18,17 +18,18 @@ package com.stehno.sjdbcx;
 
 import com.stehno.fixture.Person;
 import com.stehno.fixture.PersonRepository;
+import com.stehno.sjdbcx.beans.ApplicationContextComponentResolver;
+import com.stehno.sjdbcx.support.RepositoryInvocationHandler;
 import com.stehno.test.TestDatabase;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.context.ApplicationContext;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.SingleColumnRowMapper;
 import org.springframework.test.jdbc.JdbcTestUtils;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -41,29 +42,38 @@ import static org.mockito.Mockito.when;
 public class RepositoryFactoryIntegrationTest {
 
     private static final String TABLE_NAME = "people";
-    private RepositoryFactory factory;
     private PersonRepository repository;
     private Person person;
 
     @Rule public TestDatabase database = new TestDatabase();
-    @Mock private SqlSourceResolver sqlSourceResolver;
-    @Mock private ComponentResolver componentResolver;
 
     @Before
     public void before(){
+        final ApplicationContext applicationContext = mock(ApplicationContext.class);
+
+        final ApplicationContextComponentResolver componentResolver = new ApplicationContextComponentResolver();
+        ReflectionTestUtils.setField( componentResolver, "applicationContext", applicationContext );
+
         final SqlSource sqlSource = mock(SqlSource.class);
         when(sqlSource.getSql("findbyname")).thenReturn("select id,first_name,last_name,age from people where first_name=:name");
 
+        final SqlSourceResolver sqlSourceResolver = mock(SqlSourceResolver.class);
         when( sqlSourceResolver.resolve( new ClassPathResource( "/personrepository.sql.properties" ) ) ).thenReturn(sqlSource);
 
-        when(componentResolver.resolve( "singleColumnRowMapper", RowMapper.class )).thenReturn(
-            new SingleColumnRowMapper( Long.class )
-        );
+        final RepositoryInvocationHandler handler = new RepositoryInvocationHandler();
+        ReflectionTestUtils.setField( handler, "namedParameterJdbcTemplate", database.getNamedJdbcTemplate() );
+        ReflectionTestUtils.setField( handler, "componentResolver", componentResolver );
+        ReflectionTestUtils.setField( handler, "sqlSourceResolver", sqlSourceResolver );
 
-        factory = new RepositoryFactory();
-        factory.setNamedParameterJdbcTemplate( database.getNamedJdbcTemplate() );
-        factory.setSqlSourceResolver( sqlSourceResolver );
-        factory.setComponentResolver( componentResolver );
+        when(applicationContext.getBean("repositoryInvocationHandler", RepositoryInvocationHandler.class)).thenReturn(handler);
+
+        final RepositoryFactory factory = new RepositoryFactory();
+        ReflectionTestUtils.setField( factory, "applicationContext", applicationContext );
+
+
+//        when(componentResolver.resolve( "singleColumnRowMapper", RowMapper.class )).thenReturn(
+//            new SingleColumnRowMapper( Long.class )
+//        );
 
         repository = factory.create( PersonRepository.class );
         assertNotNull( repository );

@@ -16,7 +16,6 @@
 
 package com.stehno.sjdbcx.support;
 
-import com.stehno.sjdbcx.ParamArg;
 import com.stehno.sjdbcx.ParamMapper;
 import com.stehno.sjdbcx.annotation.Param;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
@@ -37,13 +36,15 @@ public class DefaultParamMapper implements ParamMapper {
     public SqlParameterSource map( final ParamArg[] paramArgs ){
         final MapSqlParameterSource parameterSource = new MapSqlParameterSource();
 
-        for( final ParamArg arg: paramArgs ){
-            final Annotation annot = arg.findAnnotation( Param.class );
-            if( annot == null ){
-                addBean(parameterSource, arg.getArgument());
+        if( paramArgs != null ){
+            for( final ParamArg arg: paramArgs ){
+                final Annotation annot = arg.findAnnotation( Param.class );
+                if( annot == null ){
+                    addBean(parameterSource, arg.getArgument());
 
-            } else {
-                parameterSource.addValue( ((Param)annot).value(), arg.getArgument() );
+                } else {
+                    parameterSource.addValue( ((Param)annot).value(), arg.getArgument() );
+                }
             }
         }
 

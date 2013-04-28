@@ -17,39 +17,26 @@
 package com.stehno.sjdbcx;
 
 import com.stehno.sjdbcx.support.RepositoryInvocationHandler;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Proxy;
 
 public class RepositoryFactory {
-    // TODO: need to consider the performance aspects of this
-    // TODO: could allow un-annotated methods to pass through
-    // TODO: consider - metrics, jmx, logging, result caching
-    // TODO: cache the various objects used here
 
-    private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    private SqlSourceResolver sqlSourceResolver;
-    private ComponentResolver componentResolver;
+    private static final String BEAN_NAME = "repositoryInvocationHandler";
 
-    public void setComponentResolver( final ComponentResolver componentResolver ){
-        this.componentResolver = componentResolver;
-    }
-
-    public void setSqlSourceResolver( final SqlSourceResolver sqlSourceResolver ){
-        this.sqlSourceResolver = sqlSourceResolver;
-    }
-
-    public void setNamedParameterJdbcTemplate( final NamedParameterJdbcTemplate namedParameterJdbcTemplate ){
-        this.namedParameterJdbcTemplate = namedParameterJdbcTemplate;
-    }
+    @Autowired private ApplicationContext applicationContext;
 
     @SuppressWarnings("unchecked")
-    public <T> T create( Class<T> repoIface ){
-        final RepositoryInvocationHandler handler = new RepositoryInvocationHandler();
-        handler.setSqlSourceResolver( sqlSourceResolver );
-        handler.setJdbcTemplate( namedParameterJdbcTemplate );
-        handler.setComponentResolver( componentResolver );
+    public <T> T create( Class<T> repoInterface ){
+        Assert.isTrue( repoInterface.isInterface(), "An interface must be specified." );
 
-        return (T)Proxy.newProxyInstance( repoIface.getClassLoader(), new Class[]{ repoIface }, handler );
+        return (T)Proxy.newProxyInstance(
+            repoInterface.getClassLoader(),
+            new Class[]{ repoInterface },
+            applicationContext.getBean( BEAN_NAME, RepositoryInvocationHandler.class )
+        );
     }
 }
