@@ -25,39 +25,51 @@ import java.lang.reflect.Method;
 /**
  *
  */
-public class OperationContext {
+class OperationContext {
 
-    private final Method method;
-    private final String sql;
-    private final NamedParameterJdbcTemplate jdbcTemplate;
-    private final ComponentResolver componentResolver;
-    private final ParamMapper paramMapper;
+    private NamedParameterJdbcTemplate jdbcTemplate;
+    private ComponentResolver componentResolver;
+    private Method method;
+    private String sql;
+    private ParamMapper paramMapper;
 
-    public OperationContext( final Method method, final String sql, final ComponentResolver componentResolver, final NamedParameterJdbcTemplate jdbcTemplate, final ParamMapper paramMapper ){
-        this.method = method;
-        this.sql = sql;
-        this.componentResolver = componentResolver;
+    void setJdbcTemplate( final NamedParameterJdbcTemplate jdbcTemplate ){
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    void setComponentResolver( final ComponentResolver componentResolver ){
+        this.componentResolver = componentResolver;
+    }
+
+    void setMethod( final Method method ){
+        this.method = method;
+    }
+
+    void setSql( final String sql ){
+        this.sql = sql;
+    }
+
+    void setParamMapper( final ParamMapper paramMapper ){
         this.paramMapper = paramMapper;
     }
 
-    public Method getMethod(){
+    Method getMethod(){
         return method;
     }
 
-    public ParamMapper getParamMapper(){
+    ParamMapper getParamMapper(){
         return paramMapper;
     }
 
-    public ComponentResolver getComponentResolver(){
+    ComponentResolver getComponentResolver(){
         return componentResolver;
     }
 
-    public NamedParameterJdbcTemplate getJdbcTemplate(){
+    NamedParameterJdbcTemplate getJdbcTemplate(){
         return jdbcTemplate;
     }
 
-    public String getSql(){
+    String getSql(){
         return sql;
     }
 }

@@ -13,5 +13,10 @@ public enum SqlType {
     /**
      * Produces a query call.
      */
-    QUERY
+    QUERY,
+
+    /**
+     * Produces an execute call.
+     */
+    EXECUTE
 }

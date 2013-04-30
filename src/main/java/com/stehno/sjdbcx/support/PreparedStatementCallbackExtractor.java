@@ -17,25 +17,27 @@
 package com.stehno.sjdbcx.support;
 
 import com.stehno.sjdbcx.ComponentResolver;
-import com.stehno.sjdbcx.ParamMapper;
 import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.util.Assert;
 
 import java.lang.reflect.Method;
 
 /**
  * FIXME: document
  */
-class ParamMapperExtractor {
+public class PreparedStatementCallbackExtractor {
 
-    private final ParamMapper defaultParamMapper = new DefaultParamMapper();
     private final ComponentResolver componentResolver;
 
-    ParamMapperExtractor( final ComponentResolver  componentResolver ){
+    PreparedStatementCallbackExtractor( final ComponentResolver  componentResolver ){
         this.componentResolver = componentResolver;
     }
 
-    ParamMapper extract( final Method method ){
-        final com.stehno.sjdbcx.annotation.ParamMapper mapper = AnnotationUtils.getAnnotation( method, com.stehno.sjdbcx.annotation.ParamMapper.class );
-        return mapper == null ? defaultParamMapper : componentResolver.resolve( mapper.value(), ParamMapper.class );
+    PreparedStatementCallback extract( final Method method ){
+        final com.stehno.sjdbcx.annotation.PreparedStatementCallback anno = AnnotationUtils.getAnnotation( method, com.stehno.sjdbcx.annotation.PreparedStatementCallback.class );
+        Assert.notNull( anno, "SqlType.EXECUTE must have a PreparedStatementCallback defined." );
+
+        return componentResolver.resolve( anno.value(), PreparedStatementCallback.class );
     }
 }

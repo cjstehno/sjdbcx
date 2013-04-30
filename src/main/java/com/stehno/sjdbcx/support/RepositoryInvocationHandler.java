@@ -21,7 +21,6 @@ import com.stehno.sjdbcx.SqlSourceResolver;
 import com.stehno.sjdbcx.annotation.JdbcDao;
 import com.stehno.sjdbcx.annotation.ResolveMethod;
 import com.stehno.sjdbcx.annotation.Sql;
-import com.stehno.sjdbcx.annotation.SqlType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,24 +71,31 @@ public class RepositoryInvocationHandler implements InvocationHandler {
             final Sql sqlAnno = AnnotationUtils.getAnnotation( method, Sql.class );
             Assert.notNull( sqlAnno, "No SQL annotation specified." );
 
-            final OperationContext context = new OperationContext(
-                method,
-                extractSql( proxy.getClass(), method, sqlAnno ),
-                componentResolver,
-                namedParameterJdbcTemplate,
-                new ParamMapperExtractor( componentResolver ).extract( method )
-            );
+            final OperationContext context = new OperationContext();
+            context.setJdbcTemplate( namedParameterJdbcTemplate );
+            context.setComponentResolver( componentResolver );
+            context.setParamMapper( new ParamMapperExtractor( componentResolver ).extract( method ) );
+            context.setMethod( method );
+            context.setSql( extractSql( proxy.getClass(), method, sqlAnno ) );
 
-            if( sqlAnno.type() == SqlType.UPDATE ){
-                operation = new UpdateOperation( context );
-            } else {
-                operation = new QueryOperation( context );
-            }
-
+            operation = buildOperation( sqlAnno, context);
             operationCache.put( method, operation );
         }
 
         return operation;
+    }
+
+    private Operation buildOperation( final Sql anno, final OperationContext context ){
+        switch( anno.type() ){
+            case UPDATE:
+                return new UpdateOperation( context );
+            case QUERY:
+                return new QueryOperation( context );
+            case EXECUTE:
+                return new ExecuteOperation( context );
+            default:
+                throw new IllegalArgumentException("Invalid SQL statement type specified.");
+        }
     }
 
     private ParamArg[] parseArguments( final Method method, final Object[] args ){
