@@ -19,6 +19,7 @@ package com.stehno.sjdbcx.support;
 import com.stehno.sjdbcx.ComponentResolver;
 import com.stehno.sjdbcx.SqlSourceResolver;
 import com.stehno.sjdbcx.annotation.JdbcDao;
+import com.stehno.sjdbcx.annotation.ReplacementType;
 import com.stehno.sjdbcx.annotation.ResolveMethod;
 import com.stehno.sjdbcx.annotation.Sql;
 import org.slf4j.Logger;
@@ -74,7 +75,6 @@ public class RepositoryInvocationHandler implements InvocationHandler {
             final OperationContext context = new OperationContext();
             context.setJdbcTemplate( namedParameterJdbcTemplate );
             context.setComponentResolver( componentResolver );
-            context.setParamMapper( new ParamMapperExtractor( componentResolver ).extract( method ) );
             context.setMethod( method );
             context.setSql( extractSql( proxy.getClass(), method, sqlAnno ) );
 
@@ -86,9 +86,10 @@ public class RepositoryInvocationHandler implements InvocationHandler {
     }
 
     private Operation buildOperation( final Sql anno, final OperationContext context ){
+        final boolean namedReplacement = anno.replacement() == null || anno.replacement() == ReplacementType.NAMED;
         switch( anno.type() ){
             case UPDATE:
-                return new UpdateOperation( context );
+                return namedReplacement ? new UpdateOperation( context ) : new IndexedUpdateOperation( context );
             case QUERY:
                 return new QueryOperation( context );
             case EXECUTE:

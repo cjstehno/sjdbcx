@@ -5,7 +5,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.support.DataAccessUtils;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.util.Collection;
@@ -14,21 +13,18 @@ import java.util.List;
 /**
  *
  */
-class QueryOperation implements Operation {
+class QueryOperation extends AbstractOperation {
 
     private static final Logger log = LoggerFactory.getLogger( QueryOperation.class );
-    private NamedParameterJdbcTemplate jdbcTemplate;
     private ParamMapper paramMapper;
     private RowMapper rowMapper;
     private Class returnType;
-    private String sql;
 
     QueryOperation( final OperationContext context ){
-        this.jdbcTemplate = context.getJdbcTemplate();
-        this.paramMapper = context.getParamMapper();
+        super(context);
+        this.paramMapper = new ParamMapperExtractor( context.getComponentResolver() ).extract( context.getMethod() );
         this.rowMapper = new RowMapperExtractor( context.getComponentResolver() ).extract( context.getMethod() );
         this.returnType = context.getMethod().getReturnType();
-        this.sql = context.getSql();
     }
 
     public Object execute( final ParamArg[] args ){
@@ -36,11 +32,11 @@ class QueryOperation implements Operation {
 
         if( log.isTraceEnabled() ){
             log.trace("Executing-Query:" );
-            log.trace(" - SQL: {}", sql);
+            log.trace(" - SQL: {}", getSql());
             log.trace(" - Params: {}", parameterSource);
         }
 
-        final List results = jdbcTemplate.query( sql, parameterSource, rowMapper );
+        final List results = getJdbcTemplate().query( getSql(), parameterSource, rowMapper );
 
         if( log.isTraceEnabled() ){
             log.trace(" - Result-count: {}", results.size());

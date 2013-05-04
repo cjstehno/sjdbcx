@@ -20,7 +20,6 @@ import com.stehno.sjdbcx.ParamMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.PreparedStatementCallback;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 /**
@@ -28,18 +27,15 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
  *
  * must have a PreparedStatementCallback defined...
  */
-class ExecuteOperation implements Operation {
+class ExecuteOperation extends AbstractOperation {
 
     private static final Logger log = LoggerFactory.getLogger( ExecuteOperation.class );
-    private final NamedParameterJdbcTemplate jdbcTemplate;
     private final ParamMapper paramMapper;
     private final PreparedStatementCallback callback;
-    private final String sql;
 
     ExecuteOperation( final OperationContext context ){
-        this.paramMapper = context.getParamMapper();
-        this.jdbcTemplate = context.getJdbcTemplate();
-        this.sql = context.getSql();
+        super(context);
+        this.paramMapper = new ParamMapperExtractor( context.getComponentResolver() ).extract( context.getMethod() );
         this.callback = new PreparedStatementCallbackExtractor( context.getComponentResolver() ).extract( context.getMethod() );
     }
 
@@ -49,11 +45,13 @@ class ExecuteOperation implements Operation {
 
         if( log.isTraceEnabled() ){
             log.trace("Executing-Execute:" );
-            log.trace(" - SQL: {}", sql);
+            log.trace(" - SQL: {}", getSql());
             log.trace(" - Params: {}", parameterSource);
         }
 
-        final Object result = jdbcTemplate.execute( sql, parameterSource, callback );
+        // TODO: add in a SqlParameterSourceAware similar to ArgumentAware
+
+        final Object result = getJdbcTemplate().execute( getSql(), parameterSource, callback );
 
         if( log.isTraceEnabled() ){
             log.trace(" - Result: {}", result);

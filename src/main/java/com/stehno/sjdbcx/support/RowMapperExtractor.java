@@ -24,6 +24,8 @@ import org.springframework.jdbc.core.SingleColumnRowMapper;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Collection;
 
 /**
@@ -51,6 +53,14 @@ class RowMapperExtractor {
             } else if( mappedType.isPrimitive() ){
                 if( mappedType == int.class || mappedType == long.class ){
                     return new SingleColumnRowMapper();
+
+                } else if( mappedType == boolean.class ){
+                    return new RowMapper<Boolean>() {
+                        @Override
+                        public Boolean mapRow( final ResultSet resultSet, final int i ) throws SQLException{
+                            return resultSet.getBoolean(1);
+                        }
+                    };
                 }
             }
 

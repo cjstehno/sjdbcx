@@ -18,34 +18,10 @@ package com.stehno.sjdbcx.annotation;
 
 import java.lang.annotation.*;
 
-/**
- *  Used to annotate a method with a SQL statement.
- */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface Sql {
+public @interface IndexedParamMapper {
 
-    /**
-     * The string of SQL with replacement parameters (named, not indexed). If not specified the method name will be used
-     * in the resolver. If the resolve method it ResolveMethod.SQL this is not a valid combination.
-     * @return
-     */
-    String value() default "";
-
-    /**
-     * Value used to retrieve the actual SQL string from a configured SqlSourceResolver.
-     *
-     * @return
-     */
-    ResolveMethod resolve() default ResolveMethod.DEFAULT;
-
-    /**
-     * The type of SQL operation, defaults to QUERY.
-     *
-     * @return
-     */
-    SqlType type() default SqlType.QUERY;
-
-    ReplacementType replacement() default ReplacementType.NAMED;
+    String value();
 }

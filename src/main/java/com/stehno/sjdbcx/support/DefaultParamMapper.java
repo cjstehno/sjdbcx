@@ -28,6 +28,8 @@ import java.lang.annotation.Annotation;
  * The default param mapper which is used if no other param mapper is specified.
  * It may be sub-classed in order to augment its functionality.
  *
+ * enums are converted to strings as .name()
+ *
  * The Param annotations are processed by this implementation.
  */
 public class DefaultParamMapper implements ParamMapper {
@@ -43,7 +45,12 @@ public class DefaultParamMapper implements ParamMapper {
                     addBean(parameterSource, arg.getArgument());
 
                 } else {
-                    parameterSource.addValue( ((Param)annot).value(), arg.getArgument() );
+                    Object value = arg.getArgument();
+                    if( value != null && value.getClass().isEnum() ){
+                        value = (( Enum )value).name();
+                    }
+
+                    parameterSource.addValue( ((Param)annot).value(), value );
                 }
             }
         }

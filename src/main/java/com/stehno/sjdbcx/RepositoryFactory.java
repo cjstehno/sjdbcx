@@ -17,21 +17,32 @@
 package com.stehno.sjdbcx;
 
 import com.stehno.sjdbcx.support.RepositoryInvocationHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
+import javax.annotation.PostConstruct;
 import java.lang.reflect.Proxy;
 
 public class RepositoryFactory {
 
     private static final String BEAN_NAME = "repositoryInvocationHandler";
+    private static final Logger log = LoggerFactory.getLogger(RepositoryFactory.class);
 
     @Autowired private ApplicationContext applicationContext;
+
+    @PostConstruct
+    public void init(){
+        log.debug("Initialized");
+    }
 
     @SuppressWarnings("unchecked")
     public <T> T create( Class<T> repoInterface ){
         Assert.isTrue( repoInterface.isInterface(), "An interface must be specified." );
+
+        log.trace( "Creating proxy for {}", repoInterface );
 
         return (T)Proxy.newProxyInstance(
             repoInterface.getClassLoader(),

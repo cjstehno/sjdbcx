@@ -17,7 +17,6 @@
 package com.stehno.sjdbcx.support;
 
 import com.stehno.sjdbcx.ComponentResolver;
-import com.stehno.sjdbcx.ParamMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import java.lang.reflect.Method;
@@ -31,7 +30,6 @@ class OperationContext {
     private ComponentResolver componentResolver;
     private Method method;
     private String sql;
-    private ParamMapper paramMapper;
 
     void setJdbcTemplate( final NamedParameterJdbcTemplate jdbcTemplate ){
         this.jdbcTemplate = jdbcTemplate;
@@ -49,16 +47,8 @@ class OperationContext {
         this.sql = sql;
     }
 
-    void setParamMapper( final ParamMapper paramMapper ){
-        this.paramMapper = paramMapper;
-    }
-
     Method getMethod(){
         return method;
-    }
-
-    ParamMapper getParamMapper(){
-        return paramMapper;
     }
 
     ComponentResolver getComponentResolver(){
