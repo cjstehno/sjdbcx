@@ -48,4 +48,11 @@ public @interface Sql {
     SqlType type() default SqlType.QUERY;
 
     ReplacementType replacement() default ReplacementType.NAMED;
+
+    /**
+     * Specify a SqlTransformer to be used (if any).
+     *
+     * @return
+     */
+    String transformer() default "";
 }

@@ -23,13 +23,15 @@ class UpdateOperation extends AbstractOperation {
     public Object execute( final ParamArg[] args ){
         final SqlParameterSource parameterSource = paramMapper.map( args );
 
+        final String sql = getSql( args );
+
         if( log.isTraceEnabled() ){
             log.trace("Executing-Update:" );
-            log.trace(" - SQL: {}", getSql());
+            log.trace(" - SQL: {}", sql);
             log.trace(" - Params: {}", parameterSource);
         }
 
-        final int result = getJdbcTemplate().update( getSql(), parameterSource );
+        final int result = getJdbcTemplate().update( sql, parameterSource );
 
         if( log.isTraceEnabled() ){
             log.trace(" - Result:  {}", result);

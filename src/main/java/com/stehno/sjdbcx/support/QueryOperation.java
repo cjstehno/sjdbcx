@@ -30,13 +30,15 @@ class QueryOperation extends AbstractOperation {
     public Object execute( final ParamArg[] args ){
         final SqlParameterSource parameterSource = paramMapper.map( args );
 
+        final String sql = getSql( args );
+
         if( log.isTraceEnabled() ){
             log.trace("Executing-Query:" );
-            log.trace(" - SQL: {}", getSql());
+            log.trace(" - SQL: {}", sql);
             log.trace(" - Params: {}", parameterSource);
         }
 
-        final List results = getJdbcTemplate().query( getSql(), parameterSource, rowMapper );
+        final List results = getJdbcTemplate().query( sql, parameterSource, rowMapper );
 
         if( log.isTraceEnabled() ){
             log.trace(" - Result-count: {}", results.size());

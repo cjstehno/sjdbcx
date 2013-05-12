@@ -43,15 +43,17 @@ class ExecuteOperation extends AbstractOperation {
     public Object execute( final ParamArg[] args ){
         final SqlParameterSource parameterSource = paramMapper.map( args );
 
+        final String sql = getSql( args );
+
         if( log.isTraceEnabled() ){
             log.trace("Executing-Execute:" );
-            log.trace(" - SQL: {}", getSql());
+            log.trace(" - SQL: {}", sql);
             log.trace(" - Params: {}", parameterSource);
         }
 
         // TODO: add in a SqlParameterSourceAware similar to ArgumentAware
 
-        final Object result = getJdbcTemplate().execute( getSql(), parameterSource, callback );
+        final Object result = getJdbcTemplate().execute( sql, parameterSource, callback );
 
         if( log.isTraceEnabled() ){
             log.trace(" - Result: {}", result);

@@ -27,9 +27,11 @@ class IndexedUpdateOperation extends AbstractOperation {
     public Object execute( final ParamArg[] args ){
         final Object[] params = paramMapper.map( args );
 
+        final String sql = getSql( args );
+
         if( log.isTraceEnabled() ){
             log.trace("Executing-Update:" );
-            log.trace(" - SQL: {}", getSql());
+            log.trace(" - SQL: {}", sql);
             log.trace(" - Params: {}", params);
         }
 
@@ -39,10 +41,10 @@ class IndexedUpdateOperation extends AbstractOperation {
                 ((ArgumentAware)statementSetter).setArguments( params );
             }
 
-            result = getJdbcTemplate().getJdbcOperations().update( getSql(), statementSetter );
+            result = getJdbcTemplate().getJdbcOperations().update( sql, statementSetter );
 
         } else {
-            result = getJdbcTemplate().getJdbcOperations().update( getSql(), params );
+            result = getJdbcTemplate().getJdbcOperations().update( sql, params );
         }
 
         if( log.isTraceEnabled() ){

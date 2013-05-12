@@ -1,21 +1,20 @@
 package com.stehno.sjdbcx.support;
 
+import com.stehno.sjdbcx.SqlTransformer;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 /**
- * Created with IntelliJ IDEA.
- * User: cjstehno
- * Date: 4/29/13
- * Time: 7:41 PM
- * To change this template use File | Settings | File Templates.
+ * An abstract base Operation containing shared functionality.
  */
 abstract class AbstractOperation implements Operation {
 
     private final NamedParameterJdbcTemplate jdbcTemplate;
+    private final SqlTransformer sqlTransformer;
     private final String sql;
 
     protected AbstractOperation( final OperationContext context ){
         this.jdbcTemplate = context.getJdbcTemplate();
+        this.sqlTransformer = new SqlTransformerExtractor( context.getComponentResolver() ).extract( context.getMethod() );
         this.sql = context.getSql();
     }
 
@@ -23,7 +22,11 @@ abstract class AbstractOperation implements Operation {
         return jdbcTemplate;
     }
 
-    protected String getSql(){
-        return sql;
+    protected String getSql( final ParamArg[] paramArgs ){
+        if( sqlTransformer != null ){
+            return sqlTransformer.apply( sql, paramArgs );
+        } else {
+            return sql;
+        }
     }
 }

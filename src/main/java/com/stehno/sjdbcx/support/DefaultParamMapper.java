@@ -17,6 +17,7 @@
 package com.stehno.sjdbcx.support;
 
 import com.stehno.sjdbcx.ParamMapper;
+import com.stehno.sjdbcx.annotation.Ignore;
 import com.stehno.sjdbcx.annotation.Param;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -31,6 +32,7 @@ import java.lang.annotation.Annotation;
  * enums are converted to strings as .name()
  *
  * The Param annotations are processed by this implementation.
+ * Any parameter annotated with Ignore will not be processed.
  */
 public class DefaultParamMapper implements ParamMapper {
 
@@ -40,17 +42,19 @@ public class DefaultParamMapper implements ParamMapper {
 
         if( paramArgs != null ){
             for( final ParamArg arg: paramArgs ){
-                final Annotation annot = arg.findAnnotation( Param.class );
-                if( annot == null ){
-                    addBean(parameterSource, arg.getArgument());
+                if( arg.findAnnotation(Ignore.class) == null ){
+                    final Annotation paramAnno = arg.findAnnotation( Param.class );
+                    if( paramAnno == null ){
+                        addBean(parameterSource, arg.getArgument());
 
-                } else {
-                    Object value = arg.getArgument();
-                    if( value != null && value.getClass().isEnum() ){
-                        value = (( Enum )value).name();
+                    } else {
+                        Object value = arg.getArgument();
+                        if( value != null && value.getClass().isEnum() ){
+                            value = (( Enum )value).name();
+                        }
+
+                        parameterSource.addValue( ((Param)paramAnno).value(), value );
                     }
-
-                    parameterSource.addValue( ((Param)annot).value(), value );
                 }
             }
         }
