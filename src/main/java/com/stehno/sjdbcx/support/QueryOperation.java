@@ -19,7 +19,7 @@ class QueryOperation extends AbstractOperation {
     private static final Logger log = LoggerFactory.getLogger( QueryOperation.class );
     private ParamMapper paramMapper;
     private RowMapper rowMapper;
-    private ResultSetExtractor<? extends List> resultSetExtractor;
+    private ResultSetExtractor resultSetExtractor;
     private Class returnType;
 
     QueryOperation( final OperationContext context ){
@@ -45,18 +45,12 @@ class QueryOperation extends AbstractOperation {
             log.trace(" - Params: {}", parameterSource);
         }
 
-        final List results;
         if( resultSetExtractor != null ){
-            results = getJdbcTemplate().query( sql, parameterSource, resultSetExtractor );
+            return getJdbcTemplate().query( sql, parameterSource, resultSetExtractor );
+
         } else {
-            results = getJdbcTemplate().query( sql, parameterSource, rowMapper );
+            return mapResultsToReturn( getJdbcTemplate().query( sql, parameterSource, rowMapper ) );
         }
-
-        if( log.isTraceEnabled() ){
-            log.trace(" - Result-count: {}", results.size());
-        }
-
-        return mapResultsToReturn( results );
     }
 
     private Object mapResultsToReturn( final List results ){

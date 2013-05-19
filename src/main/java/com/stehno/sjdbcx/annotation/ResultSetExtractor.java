@@ -3,7 +3,7 @@ package com.stehno.sjdbcx.annotation;
 import java.lang.annotation.*;
 
 /**
- *  ... only supports ResultSetExtractor<? extends List>
+ *  ... type of the returned object should match that of the method return
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
