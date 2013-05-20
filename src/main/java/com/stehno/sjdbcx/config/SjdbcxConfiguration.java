@@ -16,20 +16,35 @@
 
 package com.stehno.sjdbcx.config;
 
+import com.stehno.sjdbcx.IndexedParamMapper;
+import com.stehno.sjdbcx.ParamMapper;
 import com.stehno.sjdbcx.RepositoryFactory;
-import com.stehno.sjdbcx.beans.ApplicationContextComponentResolver;
+import com.stehno.sjdbcx.SqlTransformer;
 import com.stehno.sjdbcx.beans.PropertiesSqlSourceResolver;
+import com.stehno.sjdbcx.support.DefaultIndexedParamMapper;
+import com.stehno.sjdbcx.support.DefaultParamMapper;
 import com.stehno.sjdbcx.support.RepositoryInvocationHandler;
+import com.stehno.sjdbcx.support.extractor.AnnotatedCollaborationExtractor;
+import com.stehno.sjdbcx.support.extractor.CollaboratorExtractor;
+import com.stehno.sjdbcx.support.extractor.RowMapperExtractor;
+import com.stehno.sjdbcx.support.extractor.SqlTransformerExtractor;
+import com.stehno.sjdbcx.support.operation.OperationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
+import org.springframework.jdbc.core.PreparedStatementCallback;
+import org.springframework.jdbc.core.PreparedStatementSetter;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
 /**
  * This configuration bean provides the default beans for the SJDBCX beans and resolvers.
+ *
+ * A javax.sql.DataSource named "dataSource" must be defined somewhere in the application.
  */
 @Configuration
 public class SjdbcxConfiguration {
@@ -57,7 +72,59 @@ public class SjdbcxConfiguration {
     }
 
     @Bean
-    public ApplicationContextComponentResolver componentResolver(){
-        return new ApplicationContextComponentResolver();
+    public OperationContext operationContext(){
+        // TODO: see if there is a better way to do this with less config
+        final OperationContext operationContext = new OperationContext();
+        operationContext.registerExtractor( RowMapper.class, rowMapperExtractor() );
+        operationContext.registerExtractor( ParamMapper.class, paramMapperExtractor() );
+        operationContext.registerExtractor( IndexedParamMapper.class, indexedParamMapperExtractor() );
+        operationContext.registerExtractor( PreparedStatementCallback.class, preparedStatementCallbackExtractor() );
+        operationContext.registerExtractor( PreparedStatementSetter.class, preparedStatementSetterExtractor() );
+        operationContext.registerExtractor( ResultSetExtractor.class, resultSetExtractorExtractor() );
+        operationContext.registerExtractor( SqlTransformer.class, sqlTransformerExtractor() );
+        return operationContext;
+    }
+
+    // collaborator extractors
+
+    @Bean
+    public CollaboratorExtractor<RowMapper> rowMapperExtractor(){
+        return new RowMapperExtractor();
+    }
+
+    @Bean
+    public CollaboratorExtractor<ParamMapper> paramMapperExtractor(){
+        return new AnnotatedCollaborationExtractor<>(
+            com.stehno.sjdbcx.annotation.ParamMapper.class,
+            (ParamMapper)new DefaultParamMapper()
+        );
+    }
+
+    @Bean
+    public CollaboratorExtractor<IndexedParamMapper> indexedParamMapperExtractor(){
+        return new AnnotatedCollaborationExtractor<>(
+            com.stehno.sjdbcx.annotation.IndexedParamMapper.class,
+            (IndexedParamMapper)new DefaultIndexedParamMapper()
+        );
+    }
+
+    @Bean
+    public CollaboratorExtractor<PreparedStatementCallback> preparedStatementCallbackExtractor(){
+        return new AnnotatedCollaborationExtractor<>( com.stehno.sjdbcx.annotation.PreparedStatementCallback.class );
+    }
+
+    @Bean
+    public CollaboratorExtractor<PreparedStatementSetter> preparedStatementSetterExtractor(){
+        return new AnnotatedCollaborationExtractor<>( com.stehno.sjdbcx.annotation.PreparedStatementSetter.class );
+    }
+
+    @Bean
+    public CollaboratorExtractor<ResultSetExtractor> resultSetExtractorExtractor(){
+        return new AnnotatedCollaborationExtractor<>( com.stehno.sjdbcx.annotation.ResultSetExtractor.class );
+    }
+
+    @Bean
+    public CollaboratorExtractor<SqlTransformer> sqlTransformerExtractor(){
+        return new SqlTransformerExtractor();
     }
 }

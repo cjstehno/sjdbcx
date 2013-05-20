@@ -1,14 +1,19 @@
-package com.stehno.sjdbcx.support;
+package com.stehno.sjdbcx.support.operation;
 
 import com.stehno.sjdbcx.IndexedParamMapper;
+import com.stehno.sjdbcx.support.AnnotatedArgument;
+import com.stehno.sjdbcx.support.ArgumentAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.PreparedStatementSetter;
+
+import java.lang.reflect.Method;
 
 /**
  * ... a update operation based on indexed param replacement
  */
-class IndexedUpdateOperation extends AbstractOperation {
+public class IndexedUpdateOperation extends AbstractOperation {
     // FIXME: remove duplication with named version
 
     private static final Logger log = LoggerFactory.getLogger( IndexedUpdateOperation.class );
@@ -16,15 +21,16 @@ class IndexedUpdateOperation extends AbstractOperation {
     private final PreparedStatementSetter statementSetter;
     private final IndexedParamMapper paramMapper;
 
-    IndexedUpdateOperation( final OperationContext context ){
-        super( context );
-        this.statementSetter = new PreparedStatementSetterExtractor( context.getComponentResolver() ).extract( context.getMethod() );
-        this.paramMapper = new IndexedParamMapperExtractor( context.getComponentResolver() ).extract( context.getMethod() );
-        this.returnType = context.getMethod().getReturnType();
+    public IndexedUpdateOperation( final Method method, final String sql, final OperationContext context ){
+        super( method, sql, context );
+
+        this.statementSetter = context.extractorFor( PreparedStatementSetter.class ).extract( method );
+        this.paramMapper = context.extractorFor( IndexedParamMapper.class ).extract( method );
+        this.returnType = method.getReturnType();
     }
 
     @Override
-    public Object execute( final ParamArg[] args ){
+    public Object execute( final AnnotatedArgument[] args ){
         final Object[] params = paramMapper.map( args );
 
         final String sql = getSql( args );
@@ -35,16 +41,18 @@ class IndexedUpdateOperation extends AbstractOperation {
             log.trace(" - Params: {}", params);
         }
 
+        final JdbcOperations jdbcOperations = getNamedParameterJdbcTemplate().getJdbcOperations();
+
         final int result;
         if( statementSetter != null ){
             if( statementSetter instanceof ArgumentAware ){
                 ((ArgumentAware)statementSetter).setArguments( params );
             }
 
-            result = getJdbcTemplate().getJdbcOperations().update( sql, statementSetter );
+            result = jdbcOperations.update( sql, statementSetter );
 
         } else {
-            result = getJdbcTemplate().getJdbcOperations().update( sql, params );
+            result = jdbcOperations.update( sql, params );
         }
 
         if( log.isTraceEnabled() ){

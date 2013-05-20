@@ -14,33 +14,37 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx.support;
+package com.stehno.sjdbcx.support.operation;
 
 import com.stehno.sjdbcx.ParamMapper;
+import com.stehno.sjdbcx.support.AnnotatedArgument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+
+import java.lang.reflect.Method;
 
 /**
  * FIXME: document
  *
  * must have a PreparedStatementCallback defined...
  */
-class ExecuteOperation extends AbstractOperation {
+public class ExecuteOperation extends AbstractOperation {
 
     private static final Logger log = LoggerFactory.getLogger( ExecuteOperation.class );
     private final ParamMapper paramMapper;
     private final PreparedStatementCallback callback;
 
-    ExecuteOperation( final OperationContext context ){
-        super(context);
-        this.paramMapper = new ParamMapperExtractor( context.getComponentResolver() ).extract( context.getMethod() );
-        this.callback = new PreparedStatementCallbackExtractor( context.getComponentResolver() ).extract( context.getMethod() );
+    public ExecuteOperation( final Method method, final String sql, final OperationContext context ){
+        super(method, sql, context);
+
+        this.paramMapper = context.extractorFor( ParamMapper.class ).extract( method );
+        this.callback = context.extractorFor( PreparedStatementCallback.class ).extract( method );
     }
 
     @Override
-    public Object execute( final ParamArg[] args ){
+    public Object execute( final AnnotatedArgument[] args ){
         final SqlParameterSource parameterSource = paramMapper.map( args );
 
         final String sql = getSql( args );
@@ -53,7 +57,7 @@ class ExecuteOperation extends AbstractOperation {
 
         // TODO: add in a SqlParameterSourceAware similar to ArgumentAware
 
-        final Object result = getJdbcTemplate().execute( sql, parameterSource, callback );
+        final Object result = getNamedParameterJdbcTemplate().execute( sql, parameterSource, callback );
 
         if( log.isTraceEnabled() ){
             log.trace(" - Result: {}", result);

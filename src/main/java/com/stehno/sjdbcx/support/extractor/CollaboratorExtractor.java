@@ -14,24 +14,20 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx;
+package com.stehno.sjdbcx.support.extractor;
 
-import com.stehno.sjdbcx.support.AnnotatedArgument;
-import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import java.lang.reflect.Method;
 
 /**
- * Defines how the method input parameters are mapped to the SQL statement replacement variables.
- * Implementations should be stateless and thread-safe.
- *
- * Note that implementations must also process the Param annotations if they want them to be supported.
+ * Provides a means of extracting a JDBC collaborator based on the method and its meta data.
  */
-public interface ParamMapper {
+public interface CollaboratorExtractor<C> {
 
     /**
-     * Converts the input arguments to a SqlParameterSource object.
+     * Extracts a collaborator of the specified type from the given method.
      *
-     * @param annotatedArguments
-     * @return
+     * @param method the method
+     * @return the extracted and configured collaborator
      */
-    SqlParameterSource map( AnnotatedArgument[] annotatedArguments );
+    C extract( final Method method );
 }

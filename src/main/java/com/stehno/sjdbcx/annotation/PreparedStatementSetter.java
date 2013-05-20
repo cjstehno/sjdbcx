@@ -33,5 +33,6 @@ public @interface PreparedStatementSetter {
      *
      * @return
      */
-    String value();
+    String value() default "";
+    Class<? extends org.springframework.jdbc.core.PreparedStatementSetter> type();
 }

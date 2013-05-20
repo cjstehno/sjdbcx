@@ -31,5 +31,7 @@ public @interface ParamMapper {
      *
      * @return
      */
-    String value();
+    String value() default "";
+
+    Class<? extends com.stehno.sjdbcx.ParamMapper> type();
 }

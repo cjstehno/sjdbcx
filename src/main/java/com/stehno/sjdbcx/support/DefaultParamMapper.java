@@ -37,18 +37,18 @@ import java.lang.annotation.Annotation;
 public class DefaultParamMapper implements ParamMapper {
 
     @Override
-    public SqlParameterSource map( final ParamArg[] paramArgs ){
+    public SqlParameterSource map( final AnnotatedArgument[] annotatedArguments ){
         final MapSqlParameterSource parameterSource = new MapSqlParameterSource();
 
-        if( paramArgs != null ){
-            for( final ParamArg arg: paramArgs ){
+        if( annotatedArguments != null ){
+            for( final AnnotatedArgument arg: annotatedArguments ){
                 if( arg.findAnnotation(Ignore.class) == null ){
                     final Annotation paramAnno = arg.findAnnotation( Param.class );
                     if( paramAnno == null ){
-                        addBean(parameterSource, arg.getArgument());
+                        addBean(parameterSource, arg.getValue());
 
                     } else {
-                        Object value = arg.getArgument();
+                        Object value = arg.getValue();
                         if( value != null && value.getClass().isEnum() ){
                             value = (( Enum )value).name();
                         }

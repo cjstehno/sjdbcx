@@ -1,6 +1,7 @@
-package com.stehno.sjdbcx.support;
+package com.stehno.sjdbcx.support.operation;
 
 import com.stehno.sjdbcx.ParamMapper;
+import com.stehno.sjdbcx.support.AnnotatedArgument;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.support.DataAccessUtils;
@@ -8,13 +9,14 @@ import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
 /**
  *
  */
-class QueryOperation extends AbstractOperation {
+public class QueryOperation extends AbstractOperation {
 
     private static final Logger log = LoggerFactory.getLogger( QueryOperation.class );
     private ParamMapper paramMapper;
@@ -22,19 +24,20 @@ class QueryOperation extends AbstractOperation {
     private ResultSetExtractor resultSetExtractor;
     private Class returnType;
 
-    QueryOperation( final OperationContext context ){
-        super(context);
-        this.paramMapper = new ParamMapperExtractor( context.getComponentResolver() ).extract( context.getMethod() );
+    public QueryOperation( final Method method, final String sql, final OperationContext context ){
+        super(method, sql, context);
 
-        this.resultSetExtractor = new ResultSetExtractorExtractor( context.getComponentResolver() ).extract( context.getMethod() );
+        this.paramMapper = context.extractorFor( ParamMapper.class ).extract( method );
+
+        this.resultSetExtractor = context.extractorFor( ResultSetExtractor.class ).extract( method );
         if( this.resultSetExtractor == null ){
-            this.rowMapper = new RowMapperExtractor( context.getComponentResolver() ).extract( context.getMethod() );
+            this.rowMapper = context.extractorFor( RowMapper.class ).extract( method );
         }
 
-        this.returnType = context.getMethod().getReturnType();
+        this.returnType = method.getReturnType();
     }
 
-    public Object execute( final ParamArg[] args ){
+    public Object execute( final AnnotatedArgument[] args ){
         final SqlParameterSource parameterSource = paramMapper.map( args );
 
         final String sql = getSql( args );
@@ -46,10 +49,10 @@ class QueryOperation extends AbstractOperation {
         }
 
         if( resultSetExtractor != null ){
-            return getJdbcTemplate().query( sql, parameterSource, resultSetExtractor );
+            return getNamedParameterJdbcTemplate().query( sql, parameterSource, resultSetExtractor );
 
         } else {
-            return mapResultsToReturn( getJdbcTemplate().query( sql, parameterSource, rowMapper ) );
+            return mapResultsToReturn( getNamedParameterJdbcTemplate().query( sql, parameterSource, rowMapper ) );
         }
     }
 

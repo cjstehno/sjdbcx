@@ -10,5 +10,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface ResultSetExtractor {
 
-    String value();
+    String value() default "";
+    Class<? extends org.springframework.jdbc.core.ResultSetExtractor> type();
 }

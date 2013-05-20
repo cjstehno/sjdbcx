@@ -12,5 +12,7 @@ public @interface PreparedStatementCallback {
      *
      * @return
      */
-    String value();
+    String value() default "";
+
+    Class<? extends org.springframework.jdbc.core.PreparedStatementCallback> type();
 }

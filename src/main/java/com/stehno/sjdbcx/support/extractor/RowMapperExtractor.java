@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx.support;
+package com.stehno.sjdbcx.support.extractor;
 
-import com.stehno.sjdbcx.ComponentResolver;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.SingleColumnRowMapper;
+import org.springframework.util.StringUtils;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.ParameterizedType;
@@ -31,15 +31,9 @@ import java.util.Collection;
 /**
  *
  */
-class RowMapperExtractor {
+public class RowMapperExtractor extends AbstractCollaboratorExtractor<RowMapper>{
 
-    private final ComponentResolver componentResolver;
-
-    RowMapperExtractor( final ComponentResolver componentResolver ){
-        this.componentResolver = componentResolver;
-    }
-
-    RowMapper extract( final Method method ){
+    public RowMapper extract( final Method method ){
         final com.stehno.sjdbcx.annotation.RowMapper mapper = AnnotationUtils.getAnnotation( method, com.stehno.sjdbcx.annotation.RowMapper.class );
         if( mapper == null ){
             Class mappedType = method.getReturnType();
@@ -67,7 +61,12 @@ class RowMapperExtractor {
             return new BeanPropertyRowMapper(mappedType);
 
         } else {
-            return componentResolver.resolve( mapper.value(), org.springframework.jdbc.core.RowMapper.class );
+            final String extractKey = mapper.value();
+            if( StringUtils.isEmpty( extractKey ) ){
+                return resolve( (Class<RowMapper>)mapper.type() );
+            } else {
+                return resolve( extractKey );
+            }
         }
     }
 }

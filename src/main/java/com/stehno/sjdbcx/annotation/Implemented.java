@@ -19,15 +19,12 @@ package com.stehno.sjdbcx.annotation;
 import java.lang.annotation.*;
 
 /**
- *  Used to provide a row mapper to be used by a QUERY type SQL statement.
  *
- *  The bean provided by this reference should implement the Spring RowMapper interface.
  */
 @Target(ElementType.METHOD)
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
-public @interface RowMapper {
+public @interface Implemented {
 
-    String value() default "";
-    Class<? extends org.springframework.jdbc.core.RowMapper> type();
+    String value();
 }

@@ -16,19 +16,18 @@
 
 package com.stehno.sjdbcx.support;
 
-import com.stehno.sjdbcx.ComponentResolver;
 import com.stehno.sjdbcx.SqlSourceResolver;
 import com.stehno.sjdbcx.annotation.JdbcDao;
 import com.stehno.sjdbcx.annotation.ReplacementType;
 import com.stehno.sjdbcx.annotation.ResolveMethod;
 import com.stehno.sjdbcx.annotation.Sql;
+import com.stehno.sjdbcx.support.operation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
 
@@ -46,11 +45,12 @@ import java.util.concurrent.ConcurrentHashMap;
  * as it may be stateful.
  */
 public class RepositoryInvocationHandler implements InvocationHandler {
+    // FIXME: add decorator for caching method results
+    // FIXME: add implementation that builds all methods at initialization rather than on demand
 
     private static final Logger log = LoggerFactory.getLogger(RepositoryInvocationHandler.class);
 
-    @Autowired private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
-    @Autowired(required=false) private ComponentResolver componentResolver;
+    @Autowired private OperationContext operationContext;
     @Autowired(required=false) private SqlSourceResolver sqlSourceResolver;
 
     // a locking strategy would probably be better than CHM, but let's start with this
@@ -69,46 +69,41 @@ public class RepositoryInvocationHandler implements InvocationHandler {
         Operation operation = operationCache.get( method );
 
         if( operation == null ){
-            final Sql sqlAnno = AnnotationUtils.getAnnotation( method, Sql.class );
-            Assert.notNull( sqlAnno, "No SQL annotation specified." );
-
-            final OperationContext context = new OperationContext();
-            context.setJdbcTemplate( namedParameterJdbcTemplate );
-            context.setComponentResolver( componentResolver );
-            context.setMethod( method );
-            context.setSql( extractSql( proxy.getClass(), method, sqlAnno ) );
-
-            operation = buildOperation( sqlAnno, context);
+            operation = buildOperation( proxy.getClass(), method );
             operationCache.put( method, operation );
         }
 
         return operation;
     }
 
-    private Operation buildOperation( final Sql anno, final OperationContext context ){
-        final boolean namedReplacement = anno.replacement() == null || anno.replacement() == ReplacementType.NAMED;
-        switch( anno.type() ){
+    private Operation buildOperation( final Class proxyClass, final Method method ){
+        final Sql sqlAnno = AnnotationUtils.getAnnotation( method, Sql.class );
+        Assert.notNull( sqlAnno, "No SQL annotation specified." );
+
+        final String sql = extractSql( proxyClass, method, sqlAnno );
+
+        switch( sqlAnno.type() ){
             case UPDATE:
-                return namedReplacement ? new UpdateOperation( context ) : new IndexedUpdateOperation( context );
+                return sqlAnno.replacement() != ReplacementType.INDEXED ? new UpdateOperation(method, sql, operationContext) : new IndexedUpdateOperation(method, sql, operationContext);
             case QUERY:
-                return new QueryOperation( context );
+                return new QueryOperation(method, sql, operationContext);
             case EXECUTE:
-                return new ExecuteOperation( context );
+                return new ExecuteOperation(method, sql, operationContext);
             default:
                 throw new IllegalArgumentException("Invalid SQL statement type specified.");
         }
     }
 
-    private ParamArg[] parseArguments( final Method method, final Object[] args ){
+    private AnnotatedArgument[] parseArguments( final Method method, final Object[] args ){
         if( args != null ){
-            final ParamArg[] paramArgs = new ParamArg[args.length];
+            final AnnotatedArgument[] annotatedArguments = new AnnotatedArgument[args.length];
             final Annotation[][] paramAnnos = method.getParameterAnnotations();
 
             for( int a=0; a<args.length; a++ ){
-                paramArgs[a] = new ParamArg( args[a], paramAnnos[a] );
+                annotatedArguments[a] = new AnnotatedArgument( args[a], paramAnnos[a] );
             }
 
-            return paramArgs;
+            return annotatedArguments;
 
         } else {
             return null;

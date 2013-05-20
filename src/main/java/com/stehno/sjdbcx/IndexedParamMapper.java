@@ -16,7 +16,7 @@
 
 package com.stehno.sjdbcx;
 
-import com.stehno.sjdbcx.support.ParamArg;
+import com.stehno.sjdbcx.support.AnnotatedArgument;
 
 /**
  * Created with IntelliJ IDEA.
@@ -27,5 +27,5 @@ import com.stehno.sjdbcx.support.ParamArg;
  */
 public interface IndexedParamMapper {
 
-    public Object[] map( final ParamArg[] paramArgs );
+    public Object[] map( final AnnotatedArgument[] annotatedArguments );
 }

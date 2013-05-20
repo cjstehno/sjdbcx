@@ -22,18 +22,18 @@ import java.util.Arrays;
 /**
  * A single annotated input parameter object.
  */
-public class ParamArg {
+public class AnnotatedArgument {
 
-    private final Object argument;
+    private final Object value;
     private final Annotation[] annotations;
 
-    public ParamArg( final Object argument, final Annotation[] annotations ){
-        this.argument = argument;
+    public AnnotatedArgument( final Object value, final Annotation[] annotations ){
+        this.value = value;
         this.annotations = annotations;
     }
 
-    public Object getArgument(){
-        return argument;
+    public Object getValue(){
+        return value;
     }
 
     public Iterable<Annotation> annotations(){

@@ -25,10 +25,10 @@ import com.stehno.sjdbcx.IndexedParamMapper;
 public class DefaultIndexedParamMapper implements IndexedParamMapper {
 
     @Override
-    public Object[] map( final ParamArg[] paramArgs ){
-        final Object[] args = new Object[paramArgs.length];
-        for( int i=0; i<paramArgs.length; i++ ){
-            args[i] = paramArgs[i].getArgument();
+    public Object[] map( final AnnotatedArgument[] annotatedArguments ){
+        final Object[] args = new Object[annotatedArguments.length];
+        for( int i=0; i< annotatedArguments.length; i++ ){
+            args[i] = annotatedArguments[i].getValue();
         }
         return args;
     }

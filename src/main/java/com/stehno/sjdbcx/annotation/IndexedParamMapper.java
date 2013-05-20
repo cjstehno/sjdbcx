@@ -23,5 +23,6 @@ import java.lang.annotation.*;
 @Documented
 public @interface IndexedParamMapper {
 
-    String value();
+    String value() default "";
+    Class<? extends com.stehno.sjdbcx.IndexedParamMapper> type();
 }
