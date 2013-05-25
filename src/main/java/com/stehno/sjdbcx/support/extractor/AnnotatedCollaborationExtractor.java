@@ -23,6 +23,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
+ * FIXME: verify this text
+ *
+ *
  * Extracts a collaborator of the specified type from the component resolver based on the "value" of the annotation, if it
  * exists. If no "value" is defined (empty string), the "type" property will be used to resolve the collaborator.
  *

@@ -20,16 +20,28 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
 /**
- * Abstract base class for CollaboratorExtractors using the ComponentResolver to find collaborators.
+ * Abstract base class for CollaboratorExtractors using the ApplicationContext to find collaborators.
  */
 public abstract class AbstractCollaboratorExtractor<C> implements CollaboratorExtractor<C> {
 
     @Autowired private ApplicationContext applicationContext;
 
+    /**
+     * Resolves a collaborator bean by type.
+     *
+     * @param type the bean type
+     * @return the bean
+     */
     protected final C resolve( final Class<C> type ){
         return applicationContext.getBean( type );
     }
 
+    /**
+     * Resolves a collaborator bean by name.
+     *
+     * @param beanName the bean name
+     * @return the bean
+     */
     @SuppressWarnings("unchecked")
     protected final C resolve( final String beanName ){
         return (C)applicationContext.getBean( beanName );
