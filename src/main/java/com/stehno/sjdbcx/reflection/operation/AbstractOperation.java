@@ -17,7 +17,7 @@ public abstract class AbstractOperation implements Operation {
 
     protected AbstractOperation( final Method method, final String sql, final OperationContext context ){
         this.namedParameterJdbcTemplate = context.getNamedParameterJdbcTemplate();
-        this.sqlTransformer = context.extractorFor( SqlTransformer.class ).extract( method );
+        this.sqlTransformer = context.extract( SqlTransformer.class, method );
         this.sql = sql;
     }
 

@@ -21,11 +21,15 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
+import java.lang.reflect.Method;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
 /**
+ *  Helper context used when building operation instances to provide access to shared resouces
+ *  and simplify operation construction.
  *
+ *  This class is for internal use only.
  */
 public class OperationContext {
 
@@ -50,7 +54,7 @@ public class OperationContext {
     }
 
     @SuppressWarnings("unchecked")
-    public <E> CollaboratorExtractor<E> extractorFor( Class<E> type ){
-        return extractors.get( type );
+    public <E> E extract( final Class<E> type, final Method method ){
+        return (E)extractors.get( type ).extract( method );
     }
 }

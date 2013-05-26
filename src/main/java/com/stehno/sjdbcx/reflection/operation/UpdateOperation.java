@@ -8,8 +8,10 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.lang.reflect.Method;
 
+import static com.stehno.sjdbcx.reflection.operation.OperationUtils.convert;
+
 /**
- * Encapsulation of a single update operation method. This is used...
+ *  Reflective implementation of an update method. This class is for internal use only.
  */
 public class UpdateOperation extends AbstractOperation {
 
@@ -20,7 +22,7 @@ public class UpdateOperation extends AbstractOperation {
     public UpdateOperation( final Method method, final String sql, final OperationContext context ){
         super(method, sql, context);
 
-        this.paramMapper = context.extractorFor( ParamMapper.class ).extract( method );
+        this.paramMapper = context.extract( ParamMapper.class, method );
         this.returnType = method.getReturnType();
     }
 
@@ -41,16 +43,6 @@ public class UpdateOperation extends AbstractOperation {
             log.trace(" - Result:  {}", result);
         }
 
-        return mapResultsToReturn( result );
-    }
-
-    private Object mapResultsToReturn( final int result ){
-        Object returnValue = null;
-        if( returnType.equals( boolean.class ) ){
-            returnValue = result > 0;
-        } else if( returnType.equals( int.class ) ){
-            returnValue = result;
-        }
-        return returnValue;
+        return convert( result, returnType );
     }
 }

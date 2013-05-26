@@ -24,8 +24,8 @@ public class IndexedUpdateOperation extends AbstractOperation {
     public IndexedUpdateOperation( final Method method, final String sql, final OperationContext context ){
         super( method, sql, context );
 
-        this.statementSetter = context.extractorFor( PreparedStatementSetter.class ).extract( method );
-        this.paramMapper = context.extractorFor( IndexedParamMapper.class ).extract( method );
+        this.statementSetter = context.extract( PreparedStatementSetter.class, method );
+        this.paramMapper = context.extract( IndexedParamMapper.class, method );
         this.returnType = method.getReturnType();
     }
 

@@ -39,8 +39,8 @@ public class ExecuteOperation extends AbstractOperation {
     public ExecuteOperation( final Method method, final String sql, final OperationContext context ){
         super(method, sql, context);
 
-        this.paramMapper = context.extractorFor( ParamMapper.class ).extract( method );
-        this.callback = context.extractorFor( PreparedStatementCallback.class ).extract( method );
+        this.paramMapper = context.extract( ParamMapper.class, method );
+        this.callback = context.extract( PreparedStatementCallback.class, method );
     }
 
     @Override
