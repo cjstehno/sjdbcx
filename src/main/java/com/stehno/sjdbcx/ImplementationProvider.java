@@ -14,25 +14,22 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx.annotation;
+package com.stehno.sjdbcx;
 
-import java.lang.annotation.*;
+import org.springframework.context.ApplicationContext;
+
+import java.lang.reflect.Method;
 
 /**
- *  Used to provide a customized mapping of the method input parameters to the SQL replacement variables.
+ * FIXME: document
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface ParamMapper {
-    // FIXME: the indexed vs named should be based on the Sql annotation property and act accordingly
+public interface ImplementationProvider {
 
-    /**
-     *  Bean name of the ParamMapper instance to be used.
-     *
-     * @return
-     */
-    String value() default "";
+    void setPrototype( Class prototype );
 
-    Class<? extends com.stehno.sjdbcx.ParamMapper> type();
+    void init( ApplicationContext applicationContext );
+
+    void implement( Method method ) throws Exception;
+
+    Object instantiate();
 }

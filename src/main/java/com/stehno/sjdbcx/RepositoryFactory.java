@@ -16,38 +16,87 @@
 
 package com.stehno.sjdbcx;
 
-import com.stehno.sjdbcx.support.RepositoryInvocationHandler;
+import com.stehno.sjdbcx.annotation.JdbcRepository;
+import com.stehno.sjdbcx.annotation.Sql;
+import com.stehno.sjdbcx.reflection.ReflectionImplementationProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
 
-import javax.annotation.PostConstruct;
-import java.lang.reflect.Proxy;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 
-public class RepositoryFactory {
+/**
+ * Factory used to create instances of the Repository.
+ *
+ * Defaults to the ReflectionImplementationProvider.
+ */
+public class RepositoryFactory<T> extends AbstractFactoryBean<T> implements ApplicationContextAware {
 
-    private static final String BEAN_NAME = "repositoryInvocationHandler";
-    private static final Logger log = LoggerFactory.getLogger(RepositoryFactory.class);
+    private static final String MISSING_ANNOTATION_MSG = "The provided class (%s) is not annotated with the JdbcRepository annotation.";
+    private static final String INVALID_CLASS_MSG = "The provided class must be abstract or an interface.";
+    private static final String MISSING_TYPE_MSG = "An objectType must be specified.";
+    private static final Logger log = LoggerFactory.getLogger( RepositoryFactory.class );
+    private ApplicationContext applicationContext;
+    private Class<? extends ImplementationProvider> implementationProviderClass;
+    private Class<T> objectType;
 
-    @Autowired private ApplicationContext applicationContext;
-
-    @PostConstruct
-    public void init(){
-        log.debug("Initialized");
+    public void setImplementationProviderClass( final Class<? extends ImplementationProvider> implementationProviderClass ){
+        this.implementationProviderClass = implementationProviderClass;
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T create( Class<T> repoInterface ){
-        Assert.isTrue( repoInterface.isInterface(), "An interface must be specified." );
+    public void setObjectType( final Class<T> objectType ){
+        this.objectType = objectType;
+    }
 
-        log.trace( "Creating proxy for {}", repoInterface );
+    @Override
+    public Class<?> getObjectType(){
+        return objectType;
+    }
 
-        return (T)Proxy.newProxyInstance(
-            repoInterface.getClassLoader(),
-            new Class[]{ repoInterface },
-            applicationContext.getBean( BEAN_NAME, RepositoryInvocationHandler.class )
-        );
+    @Override
+    public void setApplicationContext( final ApplicationContext applicationContext ) throws BeansException{
+        this.applicationContext = applicationContext;
+    }
+
+    @Override
+    public void afterPropertiesSet() throws Exception {
+        Assert.notNull( objectType, MISSING_TYPE_MSG );
+        Assert.isTrue( objectType.isAnnotationPresent( JdbcRepository.class ), String.format( MISSING_ANNOTATION_MSG, objectType ) );
+        Assert.isTrue( objectType.isInterface() || Modifier.isAbstract( objectType.getModifiers() ), INVALID_CLASS_MSG );
+
+        if( implementationProviderClass == null ){
+            implementationProviderClass = ReflectionImplementationProvider.class;
+        }
+
+        super.afterPropertiesSet();
+    }
+
+    @Override
+    protected T createInstance() throws Exception {
+        final ImplementationProvider implProvider = implementationProviderClass.newInstance();
+        implProvider.setPrototype( objectType );
+        implProvider.init(applicationContext);
+
+        for( final Method method: objectType.getMethods() ){
+            if( method.isAnnotationPresent( Sql.class ) ){
+                log.trace( "Processing method: {}", method );
+
+                implProvider.implement(method);
+
+            } else {
+                if( objectType.isInterface() ){
+                    log.warn("Found interface method ({}) without Sql annotation - ignoring.", method);
+                } else {
+                    log.trace("Found non-annotated method ({}) - ignoring", method);
+                }
+            }
+        }
+
+        return (T)implProvider.instantiate();
     }
 }

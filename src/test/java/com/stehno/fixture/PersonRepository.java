@@ -20,7 +20,7 @@ import com.stehno.sjdbcx.annotation.*;
 
 import java.util.List;
 
-@JdbcDao(defaultResolve=ResolveMethod.SQL)
+@JdbcRepository(defaultResolve=ResolveMethod.SQL)
 @SuppressWarnings("ALL")
 public interface PersonRepository {
 

@@ -14,25 +14,20 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx.annotation;
+package com.stehno.sjdbcx.reflection.extractor;
 
-import java.lang.annotation.*;
+import java.lang.reflect.Method;
 
 /**
- *  Used to provide a customized mapping of the method input parameters to the SQL replacement variables.
+ * Provides a means of extracting a JDBC collaborator based on the method and its meta data.
  */
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface ParamMapper {
-    // FIXME: the indexed vs named should be based on the Sql annotation property and act accordingly
+public interface CollaboratorExtractor<C> {
 
     /**
-     *  Bean name of the ParamMapper instance to be used.
+     * Extracts a collaborator of the specified type from the given method.
      *
-     * @return
+     * @param method the method
+     * @return the extracted and configured collaborator
      */
-    String value() default "";
-
-    Class<? extends com.stehno.sjdbcx.ParamMapper> type();
+    C extract( final Method method );
 }

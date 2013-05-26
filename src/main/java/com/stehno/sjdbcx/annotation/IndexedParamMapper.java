@@ -22,7 +22,9 @@ import java.lang.annotation.*;
 @Retention(RetentionPolicy.RUNTIME)
 @Documented
 public @interface IndexedParamMapper {
+    // FIXME: the indexed vs named should be based on the Sql annotation property and act accordingly
 
     String value() default "";
+
     Class<? extends com.stehno.sjdbcx.IndexedParamMapper> type();
 }

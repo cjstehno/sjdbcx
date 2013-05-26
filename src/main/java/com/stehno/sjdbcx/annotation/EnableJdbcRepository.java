@@ -16,23 +16,21 @@
 
 package com.stehno.sjdbcx.annotation;
 
+import com.stehno.sjdbcx.config.SjdbcxConfiguration;
+import org.springframework.context.annotation.Import;
+
 import java.lang.annotation.*;
 
 /**
- *  Used to provide a customized mapping of the method input parameters to the SQL replacement variables.
+ * Used to simplify the configuration. When this annotation is added to a configuration class, it will load the
+ * default spring configuration beans for SJDBCX.
+ *
+ * See SjdbcxConfiguration for more details.
  */
-@Target(ElementType.METHOD)
+@Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
+@Import(SjdbcxConfiguration.class)
 @Documented
-public @interface ParamMapper {
-    // FIXME: the indexed vs named should be based on the Sql annotation property and act accordingly
-
-    /**
-     *  Bean name of the ParamMapper instance to be used.
-     *
-     * @return
-     */
-    String value() default "";
-
-    Class<? extends com.stehno.sjdbcx.ParamMapper> type();
+public @interface EnableJdbcRepository {
+    // nothing special yet
 }

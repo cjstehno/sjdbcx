@@ -47,6 +47,11 @@ public @interface Sql {
      */
     SqlType type() default SqlType.QUERY;
 
+    /**
+     * The type of variable replacement to be used in the SQL.
+     *
+     * @return
+     */
     ReplacementType replacement() default ReplacementType.NAMED;
 
     /**

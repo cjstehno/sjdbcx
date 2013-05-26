@@ -18,26 +18,22 @@ package com.stehno.sjdbcx.config;
 
 import com.stehno.sjdbcx.IndexedParamMapper;
 import com.stehno.sjdbcx.ParamMapper;
-import com.stehno.sjdbcx.RepositoryFactory;
+import com.stehno.sjdbcx.support.SqlResolver;
 import com.stehno.sjdbcx.SqlTransformer;
-import com.stehno.sjdbcx.beans.PropertiesSqlSourceResolver;
-import com.stehno.sjdbcx.support.DefaultIndexedParamMapper;
-import com.stehno.sjdbcx.support.DefaultParamMapper;
-import com.stehno.sjdbcx.support.RepositoryInvocationHandler;
-import com.stehno.sjdbcx.support.extractor.AnnotatedCollaborationExtractor;
-import com.stehno.sjdbcx.support.extractor.CollaboratorExtractor;
-import com.stehno.sjdbcx.support.extractor.RowMapperExtractor;
-import com.stehno.sjdbcx.support.extractor.SqlTransformerExtractor;
-import com.stehno.sjdbcx.support.operation.OperationContext;
+import com.stehno.sjdbcx.reflection.DefaultIndexedParamMapper;
+import com.stehno.sjdbcx.reflection.DefaultParamMapper;
+import com.stehno.sjdbcx.reflection.extractor.AnnotatedCollaborationExtractor;
+import com.stehno.sjdbcx.reflection.extractor.CollaboratorExtractor;
+import com.stehno.sjdbcx.reflection.extractor.RowMapperExtractor;
+import com.stehno.sjdbcx.reflection.extractor.SqlTransformerExtractor;
+import com.stehno.sjdbcx.reflection.operation.OperationContext;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 import org.springframework.jdbc.core.ResultSetExtractor;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 
 import javax.sql.DataSource;
 
@@ -52,29 +48,15 @@ public class SjdbcxConfiguration {
     @Autowired private DataSource dataSource;
 
     @Bean
-    public NamedParameterJdbcTemplate namedParameterJdbcTemplate(){
-        return new NamedParameterJdbcTemplate( dataSource );
-    }
-
-    @Bean
-    public PropertiesSqlSourceResolver sqlSourceResolver(){
-        return new PropertiesSqlSourceResolver();
-    }
-
-    @Bean @Scope("prototype")
-    public RepositoryInvocationHandler repositoryInvocationHandler(){
-        return new RepositoryInvocationHandler();
-    }
-
-    @Bean
-    public RepositoryFactory repositoryFactory(){
-        return new RepositoryFactory();
+    public SqlResolver sqlResolver(){
+        return new SqlResolver();
     }
 
     @Bean
     public OperationContext operationContext(){
         // TODO: see if there is a better way to do this with less config
         final OperationContext operationContext = new OperationContext();
+        operationContext.setDataSource( dataSource );
         operationContext.registerExtractor( RowMapper.class, rowMapperExtractor() );
         operationContext.registerExtractor( ParamMapper.class, paramMapperExtractor() );
         operationContext.registerExtractor( IndexedParamMapper.class, indexedParamMapperExtractor() );
