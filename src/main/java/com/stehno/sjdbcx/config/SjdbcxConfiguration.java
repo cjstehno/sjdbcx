@@ -16,11 +16,9 @@
 
 package com.stehno.sjdbcx.config;
 
-import com.stehno.sjdbcx.IndexedParamMapper;
 import com.stehno.sjdbcx.ParamMapper;
 import com.stehno.sjdbcx.support.SqlResolver;
 import com.stehno.sjdbcx.SqlTransformer;
-import com.stehno.sjdbcx.reflection.DefaultIndexedParamMapper;
 import com.stehno.sjdbcx.reflection.DefaultParamMapper;
 import com.stehno.sjdbcx.reflection.extractor.AnnotatedCollaborationExtractor;
 import com.stehno.sjdbcx.reflection.extractor.CollaboratorExtractor;
@@ -59,7 +57,6 @@ public class SjdbcxConfiguration {
         operationContext.setDataSource( dataSource );
         operationContext.registerExtractor( RowMapper.class, rowMapperExtractor() );
         operationContext.registerExtractor( ParamMapper.class, paramMapperExtractor() );
-        operationContext.registerExtractor( IndexedParamMapper.class, indexedParamMapperExtractor() );
         operationContext.registerExtractor( PreparedStatementCallback.class, preparedStatementCallbackExtractor() );
         operationContext.registerExtractor( PreparedStatementSetter.class, preparedStatementSetterExtractor() );
         operationContext.registerExtractor( ResultSetExtractor.class, resultSetExtractorExtractor() );
@@ -79,14 +76,6 @@ public class SjdbcxConfiguration {
         return new AnnotatedCollaborationExtractor<>(
             com.stehno.sjdbcx.annotation.ParamMapper.class,
             (ParamMapper)new DefaultParamMapper()
-        );
-    }
-
-    @Bean
-    public CollaboratorExtractor<IndexedParamMapper> indexedParamMapperExtractor(){
-        return new AnnotatedCollaborationExtractor<>(
-            com.stehno.sjdbcx.annotation.IndexedParamMapper.class,
-            (IndexedParamMapper)new DefaultIndexedParamMapper()
         );
     }
 

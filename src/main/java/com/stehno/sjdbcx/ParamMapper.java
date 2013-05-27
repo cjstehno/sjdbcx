@@ -28,10 +28,20 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 public interface ParamMapper {
 
     /**
-     * Converts the input arguments to a SqlParameterSource object.
+     * Converts the input arguments to a SqlParameterSource object for a SQL statement using named
+     * parameters.
      *
      * @param annotatedArguments
      * @return
      */
-    SqlParameterSource map( AnnotatedArgument[] annotatedArguments );
+    SqlParameterSource mapByName( AnnotatedArgument[] annotatedArguments );
+
+    /**
+     * Converts the input arguments to a SqlParameterSource object for a SQL statement using indexed
+     * parameters.
+     *
+     * @param annotatedArguments
+     * @return
+     */
+    public Object[] mapByIndex( final AnnotatedArgument[] annotatedArguments );
 }

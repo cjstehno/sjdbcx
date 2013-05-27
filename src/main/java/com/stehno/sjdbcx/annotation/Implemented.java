@@ -16,6 +16,8 @@
 
 package com.stehno.sjdbcx.annotation;
 
+import com.stehno.sjdbcx.reflection.operation.Operation;
+
 import java.lang.annotation.*;
 
 /**
@@ -26,5 +28,8 @@ import java.lang.annotation.*;
 @Documented
 public @interface Implemented {
 
-    String value();
+    // class name not bean name
+    String value() default "";
+
+    Class<? extends Operation> type();
 }

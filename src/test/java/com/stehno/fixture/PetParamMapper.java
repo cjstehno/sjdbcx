@@ -24,7 +24,7 @@ import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 public class PetParamMapper implements ParamMapper {
 
     @Override
-    public SqlParameterSource map( final AnnotatedArgument[] args ){
+    public SqlParameterSource mapByName( final AnnotatedArgument[] args ){
         final Pet pet = ( Pet )args[0].getValue();
 
         final MapSqlParameterSource parameterSource = new MapSqlParameterSource();
@@ -34,5 +34,10 @@ public class PetParamMapper implements ParamMapper {
         parameterSource.addValue( "species", pet.getSpecies().name() );
 
         return parameterSource;
+    }
+
+    @Override
+    public Object[] mapByIndex( final AnnotatedArgument[] args ){
+        return null;  // not implemented
     }
 }

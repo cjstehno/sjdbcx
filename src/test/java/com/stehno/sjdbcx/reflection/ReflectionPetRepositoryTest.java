@@ -120,6 +120,23 @@ public class ReflectionPetRepositoryTest {
         assertEquals( newName, pet.getName() );
     }
 
+    @Test
+    public void findWhereOne(){
+        final List<Pet> list = petRepository.findWhere("S", Pet.Species.CAT);
+
+        assertEquals( 1, list.size() );
+        assertTrue( list.contains(SHADOW) );
+    }
+
+    @Test
+    public void findWhereTwo(){
+        final List<Pet> list = petRepository.findWhere("o", Pet.Species.CAT);
+
+        assertEquals( 2, list.size() );
+        assertTrue( list.contains(SHADOW) );
+        assertTrue( list.contains(TOM) );
+    }
+
     private void addSomePets(){
         petRepository.create( SPOT );
         petRepository.create( ARIEL );

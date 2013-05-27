@@ -14,17 +14,13 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx.annotation;
+package com.stehno.sjdbcx.reflection.operation;
 
-import java.lang.annotation.*;
+/**
+ * A decorator interface to be used with the AbstractOperation implementations. This interface
+ * defines the operation as one using indexed parameters.
+ */
+public interface IndexedOperation {
 
-@Target(ElementType.METHOD)
-@Retention(RetentionPolicy.RUNTIME)
-@Documented
-public @interface IndexedParamMapper {
-    // FIXME: the indexed vs named should be based on the Sql annotation property and act accordingly
-
-    String value() default "";
-
-    Class<? extends com.stehno.sjdbcx.IndexedParamMapper> type();
+    Object execute( final String sql, final Object[] params );
 }

@@ -38,7 +38,7 @@ import java.lang.annotation.Annotation;
 public class DefaultParamMapper implements ParamMapper {
 
     @Override
-    public SqlParameterSource map( final AnnotatedArgument[] annotatedArguments ){
+    public SqlParameterSource mapByName( final AnnotatedArgument[] annotatedArguments ){
         final MapSqlParameterSource parameterSource = new MapSqlParameterSource();
 
         if( annotatedArguments != null ){
@@ -61,6 +61,15 @@ public class DefaultParamMapper implements ParamMapper {
         }
 
         return parameterSource;
+    }
+
+    @Override
+    public Object[] mapByIndex( final AnnotatedArgument[] annotatedArguments ){
+        final Object[] args = new Object[annotatedArguments.length];
+        for( int i=0; i< annotatedArguments.length; i++ ){
+            args[i] = annotatedArguments[i].getValue();
+        }
+        return args;
     }
 
     private void addBean( final MapSqlParameterSource source, final Object beanObj ){

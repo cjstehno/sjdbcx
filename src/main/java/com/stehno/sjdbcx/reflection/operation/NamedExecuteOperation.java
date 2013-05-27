@@ -16,10 +16,6 @@
 
 package com.stehno.sjdbcx.reflection.operation;
 
-import com.stehno.sjdbcx.ParamMapper;
-import com.stehno.sjdbcx.support.AnnotatedArgument;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.PreparedStatementCallback;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
@@ -30,38 +26,23 @@ import java.lang.reflect.Method;
  *
  * must have a PreparedStatementCallback defined...
  */
-public class ExecuteOperation extends AbstractOperation {
+public class NamedExecuteOperation extends AbstractOperation implements NamedOperation {
 
-    private static final Logger log = LoggerFactory.getLogger( ExecuteOperation.class );
-    private final ParamMapper paramMapper;
     private final PreparedStatementCallback callback;
 
-    public ExecuteOperation( final Method method, final String sql, final OperationContext context ){
+    public NamedExecuteOperation( final Method method, final String sql, final OperationContext context ){
         super(method, sql, context);
 
-        this.paramMapper = context.extract( ParamMapper.class, method );
         this.callback = context.extract( PreparedStatementCallback.class, method );
     }
 
     @Override
-    public Object execute( final AnnotatedArgument[] args ){
-        final SqlParameterSource parameterSource = paramMapper.map( args );
-
-        final String sql = getSql( args );
-
-        if( log.isTraceEnabled() ){
-            log.trace("Executing-Execute:" );
-            log.trace(" - SQL: {}", sql);
-            log.trace(" - Params: {}", parameterSource);
-        }
-
+    public Object execute( final String sql, final SqlParameterSource params ){
         // TODO: add in a SqlParameterSourceAware similar to ArgumentAware
 
-        final Object result = getNamedParameterJdbcTemplate().execute( sql, parameterSource, callback );
+        final Object result = getNamedParameterJdbcOperations().execute( sql, params, callback );
 
-        if( log.isTraceEnabled() ){
-            log.trace(" - Result: {}", result);
-        }
+        logResult( result );
 
         return result;
     }

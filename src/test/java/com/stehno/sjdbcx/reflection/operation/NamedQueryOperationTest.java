@@ -27,20 +27,25 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.springframework.jdbc.core.ResultSetExtractor;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 import java.lang.reflect.Method;
+import java.util.Arrays;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class UpdateOperationTest {
+public class NamedQueryOperationTest {
 
     private static final String SQL = "select something from somewhere";
+    private Method method;
 
     @Mock private NamedParameterJdbcTemplate namedParameterJdbcTemplate;
     @Mock private OperationContext operationContext;
@@ -51,43 +56,40 @@ public class UpdateOperationTest {
         when( operationContext.extract( eq(ParamMapper.class), any(Method.class) ) ).thenReturn( new DefaultParamMapper() );
 
         when( operationContext.getNamedParameterJdbcTemplate() ).thenReturn( namedParameterJdbcTemplate );
+
+        method = QueryRepository.class.getMethod("tester");
     }
 
     @Test
-    public void executeForInt() throws Exception {
-        when( namedParameterJdbcTemplate.update( eq( SQL ), any( SqlParameterSource.class ) ) ).thenReturn(42);
+    public void executeRowMapper() throws Exception {
+        final RowMapper rowMapper = mock(RowMapper.class);
+        when( operationContext.extract( eq( RowMapper.class), any(Method.class) ) ).thenReturn( rowMapper );
 
-        final Method method = UpdateRepository.class.getMethod("intTest");
+        final Object returned = new Object();
+        when( namedParameterJdbcTemplate.query( eq( SQL ), any( SqlParameterSource.class ), eq( rowMapper ) ) ).thenReturn( Arrays.asList(returned) );
 
-        final UpdateOperation operation = new UpdateOperation( method, SQL, operationContext );
-        assertEquals( 42, operation.execute( new AnnotatedArgument[]{ } ) );
+        assertOperation( returned );
     }
 
     @Test
-    public void executeForTrueBool() throws Exception {
-        when( namedParameterJdbcTemplate.update( eq(SQL), any(SqlParameterSource.class) ) ).thenReturn(42);
+    public void executeResultSetExtractor() throws Exception {
+        final ResultSetExtractor extractor = mock(ResultSetExtractor.class);
+        when( operationContext.extract( eq(ResultSetExtractor.class), any(Method.class) ) ).thenReturn( extractor );
 
-        final Method method = UpdateRepository.class.getMethod("boolTest");
+        final Object returned = new Object();
+        when( namedParameterJdbcTemplate.query( eq( SQL ), any( SqlParameterSource.class ), eq( extractor ) ) ).thenReturn( returned );
 
-        final UpdateOperation operation = new UpdateOperation( method, SQL, operationContext );
-        assertEquals( true, operation.execute( new AnnotatedArgument[]{ } ) );
+        assertOperation( returned );
     }
 
-    @Test
-    public void executeForFalseBool() throws Exception {
-        when( namedParameterJdbcTemplate.update( eq(SQL), any(SqlParameterSource.class) ) ).thenReturn(0);
-
-        final Method method = UpdateRepository.class.getMethod("boolTest");
-
-        final UpdateOperation operation = new UpdateOperation( method, SQL, operationContext );
-        assertEquals( false, operation.execute( new AnnotatedArgument[]{ } ) );
+    private void assertOperation( final Object returned ){
+        final NamedQueryOperation operation = new NamedQueryOperation( method, SQL, operationContext );
+        assertEquals( returned, operation.execute( new AnnotatedArgument[]{} ) );
     }
 
     @JdbcRepository
-    static interface UpdateRepository {
+    static interface QueryRepository {
 
-        @Sql int intTest();
-
-        @Sql boolean boolTest();
+        @Sql Object tester();
     }
 }

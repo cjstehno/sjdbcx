@@ -1,74 +1,41 @@
 package com.stehno.sjdbcx.reflection.operation;
 
-import com.stehno.sjdbcx.IndexedParamMapper;
-import com.stehno.sjdbcx.support.AnnotatedArgument;
 import com.stehno.sjdbcx.support.ArgumentAware;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.PreparedStatementSetter;
 
 import java.lang.reflect.Method;
 
+import static com.stehno.sjdbcx.reflection.operation.OperationUtils.convert;
+
 /**
  * ... a update operation based on indexed param replacement
  */
-public class IndexedUpdateOperation extends AbstractOperation {
-    // FIXME: remove duplication with named version
+public class IndexedUpdateOperation extends AbstractOperation implements IndexedOperation {
 
-    private static final Logger log = LoggerFactory.getLogger( IndexedUpdateOperation.class );
-    private final Class returnType;
     private final PreparedStatementSetter statementSetter;
-    private final IndexedParamMapper paramMapper;
 
     public IndexedUpdateOperation( final Method method, final String sql, final OperationContext context ){
         super( method, sql, context );
 
         this.statementSetter = context.extract( PreparedStatementSetter.class, method );
-        this.paramMapper = context.extract( IndexedParamMapper.class, method );
-        this.returnType = method.getReturnType();
     }
 
     @Override
-    public Object execute( final AnnotatedArgument[] args ){
-        final Object[] params = paramMapper.map( args );
-
-        final String sql = getSql( args );
-
-        if( log.isTraceEnabled() ){
-            log.trace("Executing-Update:" );
-            log.trace(" - SQL: {}", sql);
-            log.trace(" - Params: {}", params);
-        }
-
-        final JdbcOperations jdbcOperations = getNamedParameterJdbcTemplate().getJdbcOperations();
-
+    public Object execute( final String sql, final Object[] params ){
         final int result;
         if( statementSetter != null ){
             if( statementSetter instanceof ArgumentAware ){
                 ((ArgumentAware)statementSetter).setArguments( params );
             }
 
-            result = jdbcOperations.update( sql, statementSetter );
+            result = getJdbcOperations().update( sql, statementSetter );
 
         } else {
-            result = jdbcOperations.update( sql, params );
+            result = getJdbcOperations().update( sql, params );
         }
 
-        if( log.isTraceEnabled() ){
-            log.trace(" - Result:  {}", result);
-        }
+        logResult( result );
 
-        return mapResultsToReturn( result );
-    }
-
-    private Object mapResultsToReturn( final int result ){
-        Object returnValue = null;
-        if( returnType.equals( boolean.class ) ){
-            returnValue = result > 0;
-        } else if( returnType.equals( int.class ) ){
-            returnValue = result;
-        }
-        return returnValue;
+        return convert( result, getReturnType() );
     }
 }

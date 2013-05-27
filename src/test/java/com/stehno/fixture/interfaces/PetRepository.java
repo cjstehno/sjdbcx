@@ -40,6 +40,10 @@ public interface PetRepository {
     @Sql("list.species")
     List<Pet> list( @Param("species") Pet.Species species );
 
+    @Sql(value="select id,name,species from pets where name like ? and species=?", resolve=ResolveMethod.SQL)
+    @Implemented(type=FindWhereOperation.class)
+    List<Pet> findWhere( String nameLike, Pet.Species species );
+
     @Sql(type=SqlType.UPDATE) @ParamMapper(type=PetParamMapper.class)
     void create( Pet pet );
 

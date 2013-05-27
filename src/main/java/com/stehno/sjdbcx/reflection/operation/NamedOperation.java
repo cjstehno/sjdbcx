@@ -14,18 +14,15 @@
  * limitations under the License.
  */
 
-package com.stehno.sjdbcx;
+package com.stehno.sjdbcx.reflection.operation;
 
-import com.stehno.sjdbcx.support.AnnotatedArgument;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 
 /**
- * Created with IntelliJ IDEA.
- * User: cjstehno
- * Date: 5/4/13
- * Time: 6:26 AM
- * To change this template use File | Settings | File Templates.
+ * A decorator interface to be used with the AbstractOperation implementations. This interface
+ * defines the operation as one using named parameters.
  */
-public interface IndexedParamMapper {
+public interface NamedOperation {
 
-    public Object[] map( final AnnotatedArgument[] annotatedArguments );
+    Object execute( final String sql, final SqlParameterSource params );
 }
