@@ -5,12 +5,11 @@
 /*.launch
 /*.tmproj
 /out
-
+/build
+/.gradle
 .idea/*
 *.iml
 *.iws
 *.ipr
-
 /target
-
 *.war
