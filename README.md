@@ -1,6 +1,6 @@
 ﻿# sjdbcx
 
-> This is VERY raw alpha code
+> This is VERY raw alpha code AND this README is VERY OUTDATED
 
 A light extension of the Spring JDBC support classes to add annotation support to ease DAO creation and management.
 
