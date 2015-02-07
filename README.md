@@ -1,6 +1,6 @@
 ﻿# sjdbcx
 
-> This is VERY raw alpha code
+> This project has been abandoned - if you are interested in this kind of functionality, please look at my [Effigy](https://github.com/cjstehno/effigy) project.
 
 A light extension of the Spring JDBC support classes to add annotation support to ease DAO creation and management.
 
